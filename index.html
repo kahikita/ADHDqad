@@ -1,0 +1,2657 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>QAD 毎日の記録</title>
+
+  <!-- iOS / Android ホーム画面追加（スタンドアロンアプリ化）設定 -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="QAD記録" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0f766e" />
+
+  <!-- アプリアイコン -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230f766e'/%3E%3Cpath d='M136 168h240M136 256h176M136 344h120' stroke='%23ffffff' stroke-width='36' stroke-linecap='round'/%3E%3Ccircle cx='364' cy='344' r='44' fill='%2386efac'/%3E%3Cpath d='M346 344l13 13 25-27' stroke='%23166534' stroke-width='12' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230f766e'/%3E%3Cpath d='M136 168h240M136 256h176M136 344h120' stroke='%23ffffff' stroke-width='36' stroke-linecap='round'/%3E%3Ccircle cx='364' cy='344' r='44' fill='%2386efac'/%3E%3Cpath d='M346 344l13 13 25-27' stroke='%23166534' stroke-width='12' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+
+  <!-- グラフ・PDF出力用ライブラリ -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+
+  <style id="dynamic-print-page-style">
+    @media print {
+      @page { size: A4 portrait; margin: 8mm 10mm; }
+    }
+  </style>
+
+  <style>
+    :root {
+      --primary: #0f766e;
+      --primary-dark: #115e59;
+      --primary-light: #f0fdfa;
+      --primary-border: #99f6e4;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --text-sub: #475569;
+      --text-muted: #94a3b8;
+      --border: #e2e8f0;
+      --danger: #e11d48;
+      --danger-bg: #fff1f2;
+      --radius: 16px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .hidden { display: none !important; }
+
+    /* アプリ上部ヘッダー */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: calc(10px + var(--safe-top)) 16px 10px;
+    }
+    .header-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .app-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .app-logo-dot {
+      width: 10px;
+      height: 22px;
+      border-radius: 4px;
+      background: var(--primary);
+    }
+    .app-title {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .badge-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--primary-border);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    /* メインコンテナ */
+    .app-main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 14px 14px calc(135px + var(--safe-bottom));
+    }
+
+    /* カード共通 */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .card-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .card-sub {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    /* フォーム要素 */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 360px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    .field-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-sub);
+      margin-bottom: 4px;
+    }
+    .input-ctrl {
+      width: 100%;
+      height: 42px;
+      padding: 0 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .input-ctrl:focus {
+      background: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+    }
+    textarea.input-ctrl {
+      height: auto;
+      padding: 10px 12px;
+      font-weight: 400;
+      line-height: 1.5;
+      resize: vertical;
+    }
+
+    /* 用量プリセットチップ */
+    .preset-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .preset-btn {
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: var(--text-sub);
+      cursor: pointer;
+    }
+    .preset-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    /* ボタン共通 */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-primary { background: var(--primary); color: #ffffff; }
+    .btn-soft { background: var(--primary-light); color: var(--primary); border-color: var(--primary-border); }
+    .btn-neutral { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
+    .btn-danger { background: var(--danger-bg); color: var(--danger); border-color: #fecdd3; }
+    .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 9px; }
+    .btn-block { width: 100%; }
+
+    /* スコア配色 */
+    .chip-0 { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }
+    .chip-1 { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+    .chip-2 { background: #ecfccb; color: #3f6212; border: 1px solid #bef264; }
+    .chip-3 { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+
+    /* 質問アイテム */
+    .q-domain-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .q-domain-head {
+      background: #f8fafc;
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .q-domain-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .q-domain-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+    .q-item {
+      padding: 14px 16px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .q-item:last-child { border-bottom: none; }
+    .q-text-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .q-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 30px;
+      height: 22px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 11px;
+      font-weight: 800;
+      margin-top: 1px;
+    }
+    .q-text {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+      line-height: 1.45;
+    }
+    .seg-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .seg-btn {
+      padding: 8px 4px;
+      border-radius: 11px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      cursor: pointer;
+    }
+    .seg-btn .val { font-size: 15px; font-weight: 800; line-height: 1.1; }
+    .seg-btn .lbl { font-size: 10px; font-weight: 600; line-height: 1.15; text-align: center; }
+    .seg-btn-0.active { background: #ea580c; color: #fff; border-color: #ea580c; }
+    .seg-btn-1.active { background: #ca8a04; color: #fff; border-color: #ca8a04; }
+    .seg-btn-2.active { background: #0d9488; color: #fff; border-color: #0d9488; }
+    .seg-btn-3.active { background: #16a34a; color: #fff; border-color: #16a34a; }
+
+    /* 入力画面のフローティング保存バー（下部ナビのすぐ上に配置） */
+    .floating-score-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: calc(62px + var(--safe-bottom));
+      z-index: 25;
+      padding: 0 12px;
+      pointer-events: none;
+    }
+    .floating-score-inner {
+      max-width: 732px;
+      margin: 0 auto;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: #ffffff;
+      border-radius: 16px;
+      padding: 9px 14px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.22);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      pointer-events: auto;
+    }
+    .score-mini-breakdown {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: #cbd5e1;
+    }
+    .score-mini-breakdown b { color: #ffffff; font-size: 12px; }
+    .score-total-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+    }
+    .score-total-num {
+      font-size: 20px;
+      font-weight: 800;
+      color: #5eead4;
+      line-height: 1;
+    }
+
+    /* スマホアプリ風 固定ボトムタブバー */
+    .bottom-tab-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 35;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      padding: 6px 8px calc(6px + var(--safe-bottom));
+    }
+    .bottom-tab-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+    .nav-tab {
+      background: transparent;
+      border: none;
+      border-radius: 12px;
+      padding: 5px 2px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      color: #64748b;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .nav-tab svg { width: 20px; height: 20px; }
+    .nav-tab.active {
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    /* 履歴カードリスト */
+    .history-item-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 13px 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+    .history-item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .history-date { font-size: 15px; font-weight: 800; color: var(--text); }
+    .history-dose { font-size: 11px; font-weight: 600; color: var(--text-sub); background: #f1f5f9; padding: 2px 8px; border-radius: 6px; }
+    .history-domains {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 7px 8px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-bottom: 8px;
+    }
+    .history-domains strong { display: block; font-size: 13px; color: var(--text); }
+    .history-memo {
+      font-size: 12px;
+      color: var(--text-sub);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 8px;
+    }
+    .history-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .dist-mini { display: flex; gap: 4px; font-size: 10px; font-weight: 700; }
+    .dist-mini span { padding: 2px 6px; border-radius: 6px; }
+
+    /* KPIグリッド */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    @media (min-width: 640px) {
+      .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    .kpi-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .kpi-box.highlight { background: var(--primary-light); border-color: var(--primary-border); }
+    .kpi-label { font-size: 11px; font-weight: 700; color: var(--text-sub); }
+    .kpi-val { font-size: 18px; font-weight: 800; color: var(--text); margin-top: 2px; }
+
+    /* グラフ枠 */
+    .chart-box {
+      position: relative;
+      height: 210px;
+      width: 100%;
+    }
+
+    /* テーブル共通 */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .data-table th, .data-table td {
+      padding: 8px 6px;
+      border-bottom: 1px solid #f1f5f9;
+      text-align: left;
+    }
+    .data-table th {
+      background: #f8fafc;
+      font-weight: 700;
+      color: var(--text-sub);
+    }
+    .text-right { text-align: right !important; }
+    .text-center { text-align: center !important; }
+
+    /* 問診票ペーパーシート */
+    .paper-scroll-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 12px;
+    }
+    #clinic-form-sheet {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      width: 794px;
+      padding: 26px 30px;
+      margin: 0 auto;
+      color: #0f172a;
+    }
+    .clinic-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .clinic-table th, .clinic-table td {
+      border: 1px solid #334155;
+      padding: 4px 7px;
+    }
+    .clinic-table th { background: #f1f5f9; font-weight: 700; }
+    .paper-memo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .paper-memo-box {
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 8px 10px;
+      min-height: 76px;
+      font-size: 12px;
+    }
+
+    /* モーダル共通 */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(15, 23, 42, 0.68);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+    }
+    .modal-panel {
+      background: #ffffff;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 640px;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    }
+    .modal-head {
+      padding: 12px 16px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .modal-head h3 { margin: 0; font-size: 15px; font-weight: 800; }
+    .modal-body { padding: 14px 16px; overflow-y: auto; flex: 1; }
+
+    /* トースト通知 */
+    #toast-container {
+      position: fixed;
+      top: calc(14px + var(--safe-top));
+      left: 12px;
+      right: 12px;
+      z-index: 80;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast-msg {
+      max-width: 480px;
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      background: #1e293b;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+    .toast-success { background: #0f766e; }
+    .toast-warn { background: #d97706; }
+    .toast-error { background: #be123c; }
+
+    /* アコーディオン（details） */
+    details.acc-box > summary {
+      list-style: none;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 800;
+      font-size: 14px;
+    }
+    details.acc-box > summary::-webkit-details-marker { display: none; }
+
+    /* 印刷用 */
+    @media print {
+      body { background: #fff !important; }
+      .no-print { display: none !important; }
+      .app-main { max-width: 100% !important; padding: 0 !important; }
+      #clinic-form-sheet, #trends-print-area {
+        border: none !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        padding: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- トップヘッダー -->
+  <header class="app-header no-print">
+    <div class="header-inner">
+      <div class="app-title-wrap">
+        <span class="app-logo-dot"></span>
+        <h1 class="app-title">QAD 毎日の記録</h1>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span id="header-sync-dot" class="badge-pill" onclick="switchTab('history')">記録 1日分</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- トースト通知 -->
+  <div id="toast-container" class="no-print"></div>
+
+  <!-- 確認モーダル -->
+  <div id="confirm-modal" class="modal-backdrop no-print hidden">
+    <div class="modal-panel" style="max-width:400px;">
+      <div class="modal-head">
+        <h3 id="confirm-title">確認</h3>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-message" style="margin:0 0 16px; font-size:14px; color:#334155;"></p>
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+          <button type="button" id="confirm-cancel-btn" class="btn btn-neutral">キャンセル</button>
+          <button type="button" id="confirm-ok-btn" class="btn btn-danger">削除する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDF出力プレビューモーダル -->
+  <div id="pdf-preview-modal" class="modal-backdrop no-print hidden">
+    <div class="modal-panel" style="max-width:860px;">
+      <div class="modal-head">
+        <h3 id="pdf-modal-title">PDF出力</h3>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <a id="pdf-modal-open-tab" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">別タブでPDFを開く</a>
+          <button type="button" id="pdf-modal-download-btn" class="btn btn-soft btn-sm">ダウンロード</button>
+          <button type="button" onclick="closePdfPreviewModal()" class="btn btn-neutral btn-sm">閉じる</button>
+        </div>
+      </div>
+      <div class="modal-body" style="background:#e2e8f0; text-align:center;">
+        <img id="pdf-modal-preview-img" alt="PDFプレビュー" style="max-width:100%; height:auto; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.15);" />
+        <p id="pdf-modal-footer-note" style="font-size:11px; color:#475569; margin:10px 0 0;"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- GASコード表示モーダル -->
+  <div id="gas-code-modal" class="modal-backdrop no-print hidden">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h3>Googleスプレッドシート連携用 GASコード</h3>
+        <button type="button" onclick="closeGasCodeModal()" class="btn btn-neutral btn-sm">閉じる</button>
+      </div>
+      <div class="modal-body">
+        <div style="background:#f0fdfa; border:1px solid #99f6e4; border-radius:12px; padding:10px 12px; font-size:12px; color:#115e59; margin-bottom:10px;">
+          <strong>設定手順（初回のみ）：</strong>
+          <ol style="margin:6px 0 0; padding-left:18px;">
+            <li>下の「GASコードをコピー」を押す</li>
+            <li>Googleスプレッドシートを開き、「拡張機能」＞「Apps Script」に貼り付けて保存</li>
+            <li>「デプロイ」＞「新しいデプロイ」＞種類「ウェブアプリ」＞アクセスできるユーザー「全員」でデプロイ</li>
+            <li>発行されたURLをアプリ側の「GAS URL」欄に貼って保存</li>
+          </ol>
+        </div>
+        <button type="button" onclick="copyGasSourceCode()" class="btn btn-primary btn-block" style="margin-bottom:10px;">GASコードをコピー</button>
+        <textarea id="gas-source-textarea" readonly rows="10" class="input-ctrl" style="font-family:monospace; font-size:11px; background:#0f172a; color:#f8fafc;"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- データ書き出し・復元モーダル -->
+  <div id="data-backup-modal" class="modal-backdrop no-print hidden">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h3 id="backup-modal-title">バックアップ / 復元</h3>
+        <button type="button" onclick="closeBackupModal()" class="btn btn-neutral btn-sm">閉じる</button>
+      </div>
+      <div class="modal-body">
+        <p id="backup-modal-desc" style="font-size:12px; color:#475569; margin-top:0;"></p>
+        <div id="backup-export-actions" style="display:flex; gap:8px; margin-bottom:10px;">
+          <a id="backup-download-link" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="flex:1;">ファイル保存（別タブ）</a>
+          <button type="button" onclick="copyBackupTextarea()" class="btn btn-soft" style="flex:1;">全文をコピー</button>
+        </div>
+        <textarea id="backup-textarea" rows="8" class="input-ctrl" style="font-family:monospace; font-size:11px;"></textarea>
+        <div id="backup-import-actions" class="hidden" style="margin-top:10px;">
+          <button type="button" onclick="executeJsonRestore()" class="btn btn-primary btn-block">この内容から復元する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- メインコンテンツ -->
+  <main id="app-main" class="app-main">
+
+    <!-- =================================================================== -->
+    <!-- 1. 毎日の入力タブ -->
+    <!-- =================================================================== -->
+    <section id="view-input">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">日付・服薬</h2>
+            <p class="card-sub">1日1回朝（18mg〜72mg）</p>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span id="input-edit-status" class="badge-pill">新規記録</span>
+            <button type="button" onclick="copyFromPreviousRecord()" class="btn btn-neutral btn-sm">前回コピー</button>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <label for="input-date" class="field-label">記録日</label>
+            <input type="date" id="input-date" class="input-ctrl" />
+          </div>
+          <div>
+            <label for="input-next-visit" class="field-label">次回の診察日</label>
+            <input type="date" id="input-next-visit" value="2026-12-09" onchange="syncNextVisitDate(this.value)" class="input-ctrl" />
+          </div>
+          <div>
+            <label for="input-freq" class="field-label">用法</label>
+            <select id="input-freq" onchange="onFreqChange()" class="input-ctrl">
+              <option value="1" selected>1日 1 回（朝）</option>
+              <option value="0">服薬なし（0回）</option>
+              <option value="2">1日 2 回</option>
+            </select>
+          </div>
+          <div>
+            <label for="input-dose" class="field-label">1日用量（mg/日）</label>
+            <input type="number" id="input-dose" min="0" max="108" step="1" value="18" oninput="syncDosePresetHighlight(); persistDraftState();" class="input-ctrl" />
+          </div>
+        </div>
+
+        <div class="preset-row">
+          <button type="button" data-dose="0" onclick="setDosePreset(0, 0)" class="preset-btn">なし</button>
+          <button type="button" data-dose="18" onclick="setDosePreset(1, 18)" class="preset-btn">18mg</button>
+          <button type="button" data-dose="27" onclick="setDosePreset(1, 27)" class="preset-btn">27mg</button>
+          <button type="button" data-dose="36" onclick="setDosePreset(1, 36)" class="preset-btn">36mg</button>
+          <button type="button" data-dose="45" onclick="setDosePreset(1, 45)" class="preset-btn">45mg</button>
+          <button type="button" data-dose="54" onclick="setDosePreset(1, 54)" class="preset-btn">54mg</button>
+          <button type="button" data-dose="63" onclick="setDosePreset(1, 63)" class="preset-btn">63mg</button>
+          <button type="button" data-dose="72" onclick="setDosePreset(1, 72)" class="preset-btn">72mg</button>
+        </div>
+      </div>
+
+      <!-- 回答基準 -->
+      <div class="card" style="padding:11px 14px;">
+        <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px;">回答基準（高いほど良好）</div>
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:5px; font-size:11px; font-weight:700;">
+          <span class="chip-0" style="padding:4px 8px; border-radius:8px;">0 = 全く違う</span>
+          <span class="chip-1" style="padding:4px 8px; border-radius:8px;">1 = わずかにそう思う</span>
+          <span class="chip-2" style="padding:4px 8px; border-radius:8px;">2 = かなりそう思う</span>
+          <span class="chip-3" style="padding:4px 8px; border-radius:8px;">3 = 全くその通り</span>
+        </div>
+      </div>
+
+      <!-- Q1〜Q19 質問リスト -->
+      <div id="questions-container"></div>
+
+      <!-- 自由記述メモ -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">振り返り・問診票メモ</h2>
+            <p class="card-sub">問診票フォーム下部にそのまま反映されます</p>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div>
+            <label for="memo-comments" class="field-label">周囲からのコメントや気づいた変化</label>
+            <textarea id="memo-comments" rows="2" oninput="persistDraftState()" placeholder="例：起床時に時間・気力がかかる" class="input-ctrl"></textarea>
+          </div>
+          <div>
+            <label for="memo-troubles" class="field-label">現在困っていること</label>
+            <textarea id="memo-troubles" rows="3" oninput="persistDraftState()" placeholder="例：先延ばしぐせ、夜間の過集中など" class="input-ctrl"></textarea>
+          </div>
+          <div>
+            <label for="memo-goals" class="field-label">目標など</label>
+            <textarea id="memo-goals" rows="2" oninput="persistDraftState()" placeholder="例：計画的に最後までやり遂げること" class="input-ctrl"></textarea>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:14px;">
+          <button type="button" onclick="clearCurrentForm()" class="btn btn-neutral" style="flex:1;">リセット</button>
+          <button type="button" onclick="saveAndOpenForm()" class="btn btn-soft" style="flex:1.4;">保存して問診票</button>
+          <button type="button" onclick="saveCurrentRecord()" class="btn btn-primary" style="flex:1.6;">記録を保存</button>
+        </div>
+      </div>
+
+      <!-- フローティング集計＆保存バー -->
+      <div class="floating-score-bar no-print">
+        <div class="floating-score-inner">
+          <div class="score-mini-breakdown">
+            <span>朝<b id="live-sub-morning">0</b></span>
+            <span>日中<b id="live-sub-day">0</b></span>
+            <span>夜<b id="live-sub-night">0</b></span>
+            <span>1日<b id="live-sub-allday">0</b></span>
+          </div>
+          <div class="score-total-box">
+            <div style="text-align:right;">
+              <div><span class="score-total-num" id="live-total-score">0</span><span style="font-size:11px; color:#94a3b8;">/57</span></div>
+              <div id="live-unanswered" style="font-size:10px; color:#fbbf24; font-weight:700;">未入力 19問</div>
+            </div>
+            <button type="button" onclick="saveCurrentRecord()" class="btn btn-primary btn-sm" style="padding:9px 14px;">保存</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- 2. 履歴一覧 ＆ スプレッドシート連携タブ -->
+    <!-- =================================================================== -->
+    <section id="view-history" class="hidden">
+      <!-- Googleスプレッドシート連携（折りたたみ式） -->
+      <div class="card" style="border-color:#99f6e4;">
+        <details id="gas-details-box" class="acc-box" open>
+          <summary>
+            <span style="display:flex; align-items:center; gap:7px; color:#0f766e;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+              Googleスプレッドシート同期
+            </span>
+            <span style="font-size:11px; color:#64748b; font-weight:600;">開閉 ▼</span>
+          </summary>
+          <div style="margin-top:12px; padding-top:12px; border-top:1px solid #f1f5f9;">
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+              <input type="url" id="gas-webapp-url" placeholder="https://script.google.com/macros/s/.../exec" class="input-ctrl" style="height:38px; font-size:12px;" />
+              <button type="button" onclick="saveGasWebAppUrl()" class="btn btn-neutral btn-sm" style="white-space:nowrap;">URL保存</button>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+              <button type="button" onclick="backupToGoogleSheets(this)" class="btn btn-primary">シートへ保存</button>
+              <button type="button" onclick="restoreFromGoogleSheets(this)" class="btn btn-soft">シートから復元</button>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;">
+              <label style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:#334155; cursor:pointer;">
+                <input type="checkbox" id="gas-auto-sync-toggle" onchange="toggleGasAutoSync(this.checked)" style="width:16px; height:16px; accent-color:#0f766e;" />
+                記録保存時に自動でシートへ送信する
+              </label>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+              <span id="gas-sync-status" style="font-size:11px; color:#64748b;">未同期</span>
+              <button type="button" onclick="openGasCodeModal()" class="btn btn-neutral btn-sm" style="font-size:11px;">GASコード確認</button>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <!-- 端末内バックアップ・CSV出力 -->
+      <div class="card" style="padding:12px 14px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+          <span style="font-size:13px; font-weight:800;">記録一覧（タップで編集）</span>
+          <div style="display:flex; gap:6px;">
+            <button type="button" onclick="exportCSV()" class="btn btn-neutral btn-sm">CSV</button>
+            <button type="button" onclick="openBackupExportModal()" class="btn btn-neutral btn-sm">書出</button>
+            <button type="button" onclick="openBackupImportModal()" class="btn btn-soft btn-sm">復元</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 履歴カードリスト -->
+      <div id="history-list-container"></div>
+      <div id="history-empty-state" class="card hidden" style="text-align:center; padding:32px 16px; color:#64748b;">
+        まだ記録がありません。「毎日の入力」タブから記録を登録してください。
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- 3. 推移サマリータブ -->
+    <!-- =================================================================== -->
+    <section id="view-trends" class="hidden">
+      <div class="card no-print" style="padding:12px 14px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+          <div style="display:flex; gap:4px; background:#f1f5f9; padding:3px; border-radius:10px;">
+            <button type="button" id="range-btn-all" onclick="setTrendsRange('all')" class="btn btn-sm" style="background:#fff; color:#0f766e;">全期間</button>
+            <button type="button" id="range-btn-30" onclick="setTrendsRange('30')" class="btn btn-sm" style="background:transparent; color:#475569;">30日</button>
+            <button type="button" id="range-btn-7" onclick="setTrendsRange('7')" class="btn btn-sm" style="background:transparent; color:#475569;">7日</button>
+          </div>
+          <button type="button" onclick="handlePdfAction('trends-print-area', 'landscape', `QAD_推移サマリー_${getTodayStr()}.pdf`, this)" class="btn btn-primary btn-sm">
+            PDF出力（A4横）
+          </button>
+        </div>
+      </div>
+
+      <div id="trends-print-area" class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">QAD 治療経過・推移サマリー</h2>
+            <p id="trends-print-meta" class="card-sub">出力日: -</p>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-box">
+            <div class="kpi-label">記録日数</div>
+            <div class="kpi-val"><span id="kpi-days">0</span><span style="font-size:12px; font-weight:600; color:#64748b;"> 日</span></div>
+          </div>
+          <div class="kpi-box highlight">
+            <div class="kpi-label" style="color:#0f766e;">最新合計点</div>
+            <div class="kpi-val" style="color:#0f766e;"><span id="kpi-latest-score">-</span><span style="font-size:12px; font-weight:600;"> /57</span></div>
+          </div>
+          <div class="kpi-box">
+            <div class="kpi-label">初回との差</div>
+            <div class="kpi-val" id="kpi-diff-baseline">-</div>
+          </div>
+          <div class="kpi-box">
+            <div class="kpi-label">直近7日平均</div>
+            <div class="kpi-val"><span id="kpi-7d-avg">-</span><span style="font-size:12px; font-weight:600; color:#64748b;"> 点</span></div>
+          </div>
+          <div class="kpi-box">
+            <div class="kpi-label">全期間平均</div>
+            <div class="kpi-val"><span id="kpi-all-avg">-</span><span style="font-size:12px; font-weight:600; color:#64748b;"> 点</span></div>
+          </div>
+          <div class="kpi-box">
+            <div class="kpi-label">最高点</div>
+            <div class="kpi-val" style="color:#059669;"><span id="kpi-max-score">-</span><span style="font-size:12px; font-weight:600;"> 点</span></div>
+          </div>
+          <div class="kpi-box">
+            <div class="kpi-label">最低点</div>
+            <div class="kpi-val" style="color:#d97706;"><span id="kpi-min-score">-</span><span style="font-size:12px; font-weight:600;"> 点</span></div>
+          </div>
+          <div class="kpi-box">
+            <div class="kpi-label">最新記録日</div>
+            <div class="kpi-val" id="kpi-latest-date" style="font-size:14px; padding-top:3px;">-</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <div style="font-size:13px; font-weight:800; margin-bottom:6px;">合計点と7日移動平均の推移</div>
+          <div class="chart-box"><canvas id="chart-total-trend"></canvas></div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <div style="font-size:13px; font-weight:800; margin-bottom:6px;">領域別 1項目平均推移（0〜3点）</div>
+          <div class="chart-box"><canvas id="chart-domain-trend"></canvas></div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <div style="font-size:13px; font-weight:800; margin-bottom:6px;">領域別サマリー</div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>領域</th>
+                <th class="text-right">1項目平均</th>
+                <th class="text-right">最新点</th>
+                <th class="text-right">充足率</th>
+              </tr>
+            </thead>
+            <tbody id="domain-summary-body"></tbody>
+          </table>
+          <div id="overall-dist-bars" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:6px; margin-top:10px;"></div>
+        </div>
+
+        <div>
+          <div style="font-size:13px; font-weight:800; margin-bottom:6px;">週別平均点の推移</div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>期間</th>
+                <th class="text-center">日数</th>
+                <th class="text-right">平均点</th>
+                <th class="text-right">前週比</th>
+              </tr>
+            </thead>
+            <tbody id="weekly-summary-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- 4. 問診票フォームタブ -->
+    <!-- =================================================================== -->
+    <section id="view-form" class="hidden">
+      <div class="card no-print" style="padding:12px 14px;">
+        <div class="grid-2" style="margin-bottom:10px;">
+          <div>
+            <label for="form-select-date" class="field-label">表示する記録日</label>
+            <select id="form-select-date" onchange="renderClinicForm()" class="input-ctrl" style="height:38px; font-size:13px;"></select>
+          </div>
+          <div>
+            <label for="form-next-visit" class="field-label">次回の診察日</label>
+            <input type="date" id="form-next-visit" value="2026-12-09" onchange="syncNextVisitDate(this.value); renderClinicForm();" class="input-ctrl" style="height:38px; font-size:13px;" />
+          </div>
+        </div>
+        <button type="button" onclick="handleClinicFormPdf(this)" class="btn btn-primary btn-block">
+          受診用PDFを出力（A4縦）
+        </button>
+      </div>
+
+      <div class="paper-scroll-wrap">
+        <div id="clinic-form-sheet">
+          <table class="clinic-table text-center" style="margin-bottom:8px;">
+            <thead>
+              <tr>
+                <th style="width:25%;">今日の日付</th>
+                <th style="width:25%;">次回の診察日</th>
+                <th style="width:25%;">用法</th>
+                <th style="width:25%;">用量</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="font-size:13px; font-weight:700;">
+                <td id="paper-today-date" style="padding:7px;">2026 / 11 / 25</td>
+                <td id="paper-next-date" style="padding:7px;">2026 / 12 / 09</td>
+                <td id="paper-freq" style="padding:7px;">1日 &nbsp; 1 &nbsp; 回</td>
+                <td id="paper-dose" style="padding:7px;">18 &nbsp; mg/日</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="text-align:right; font-size:11px; font-weight:700; margin-bottom:4px;">
+            0＝全く違う &nbsp;&nbsp; 1＝わずかにそう思う &nbsp;&nbsp; 2＝かなりそう思う &nbsp;&nbsp; 3＝全くその通り ▼
+          </div>
+
+          <table class="clinic-table">
+            <thead>
+              <tr class="text-center">
+                <th style="width:52px;">時間帯</th>
+                <th>QAD</th>
+                <th style="width:30px;">0</th>
+                <th style="width:30px;">1</th>
+                <th style="width:30px;">2</th>
+                <th style="width:30px;">3</th>
+              </tr>
+            </thead>
+            <tbody id="paper-qad-tbody"></tbody>
+          </table>
+
+          <div class="paper-memo-grid">
+            <div class="paper-memo-box">
+              <div style="font-size:11px; font-weight:700; margin-bottom:4px;">周囲の人からのコメントやその他気づいた変化</div>
+              <div id="paper-comments" style="white-space:pre-wrap;"></div>
+            </div>
+            <div class="paper-memo-box">
+              <div style="font-size:11px; font-weight:700; margin-bottom:4px;">現在困っていること</div>
+              <div id="paper-troubles" style="white-space:pre-wrap;"></div>
+            </div>
+          </div>
+
+          <div class="paper-memo-box" style="margin-top:8px; min-height:60px;">
+            <div style="font-size:11px; font-weight:700; margin-bottom:4px;">目標など</div>
+            <div id="paper-goals" style="white-space:pre-wrap;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- スマホアプリ風 固定ボトムナビゲーション -->
+  <nav class="bottom-tab-bar no-print" aria-label="メインメニュー">
+    <div class="bottom-tab-inner">
+      <button type="button" id="tab-btn-input" onclick="switchTab('input')" class="nav-tab active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        <span>毎日の入力</span>
+      </button>
+      <button type="button" id="tab-btn-history" onclick="switchTab('history')" class="nav-tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+        <span>履歴・同期</span>
+      </button>
+      <button type="button" id="tab-btn-trends" onclick="switchTab('trends')" class="nav-tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+        <span>推移グラフ</span>
+      </button>
+      <button type="button" id="tab-btn-form" onclick="switchTab('form')" class="nav-tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <span>問診票</span>
+      </button>
+    </div>
+  </nav>
+
+  <script>
+    // =========================================================================
+    // 定数・質問マスタ定義
+    // =========================================================================
+    const STORAGE_KEY = 'qad_daily_records_v1';
+    const NEXT_VISIT_KEY = 'qad_next_visit_date_v1';
+    const DRAFT_KEY = 'qad_current_draft_v1';
+    const GAS_URL_KEY = 'qad_gas_webapp_url_v1';
+    const GAS_LAST_SYNC_KEY = 'qad_gas_last_sync_v1';
+    const META_SAVED_AT_KEY = 'qad_last_saved_at_v1';
+    const WINDOW_NAME_PREFIX = '__QAD_STATE_BACKUP_V1__:';
+    const IDB_NAME = 'QADAppPersistentDB';
+    const IDB_STORE = 'appState';
+
+    const QAD_QUESTIONS = [
+      { id: 1,  domain: 'morning', domainLabel: '朝',       text: '朝、速やかにベッドから起きられますか？' },
+      { id: 2,  domain: 'morning', domainLabel: '朝',       text: '朝起きてから、速やかに身だしなみ（洗顔、歯磨き、着替えなど）を整えることができますか？' },
+      { id: 3,  domain: 'morning', domainLabel: '朝',       text: '朝食を速やかに済ませることができますか？' },
+      { id: 4,  domain: 'morning', domainLabel: '朝',       text: '朝から周囲とのトラブルや言い争いなどなく過ごせていますか？' },
+      { id: 5,  domain: 'day',     domainLabel: '日中',     text: '仕事や家事を開始することが、スムーズにできますか？' },
+      { id: 6,  domain: 'day',     domainLabel: '日中',     text: '周囲と同様に、計画的で段取りよく、集中して仕事や家事ができていますか？' },
+      { id: 7,  domain: 'day',     domainLabel: '日中',     text: '周囲との対人関係はうまくいっていますか？' },
+      { id: 8,  domain: 'day',     domainLabel: '日中',     text: '約束、用事や仕事を忘れずに覚えていることができますか？' },
+      { id: 9,  domain: 'day',     domainLabel: '日中',     text: '大切なものをなくすことなく過ごせていますか？' },
+      { id: 10, domain: 'day',     domainLabel: '日中',     text: '必要なときに、ゆっくり待つことができますか？' },
+      { id: 11, domain: 'day',     domainLabel: '日中',     text: 'その日にやるべきことを最後まで達成できていますか？' },
+      { id: 12, domain: 'day',     domainLabel: '日中',     text: '余計なひと言や先走った行動がないように過ごすことができていますか？' },
+      { id: 13, domain: 'day',     domainLabel: '日中',     text: '落ち着きがないとかうるさいとか言われることなく過ごせていますか？' },
+      { id: 14, domain: 'day',     domainLabel: '日中',     text: '余暇活動に問題なく参加できていますか？' },
+      { id: 15, domain: 'night',   domainLabel: '夜',       text: '特定の事柄（パソコンや携帯電話、ゲーム、パチンコ、飲酒、喫煙など）に過度に没頭せず過ごせていますか？' },
+      { id: 16, domain: 'night',   domainLabel: '夜',       text: '段取り良く、寝つくことができますか？' },
+      { id: 17, domain: 'night',   domainLabel: '夜',       text: '生活のリズム（睡眠覚醒）はうまくいっていますか？' },
+      { id: 18, domain: 'allday',  domainLabel: '1日を通して', text: '気分の落ち込みや不安なく、自信を持って過ごせていますか？' },
+      { id: 19, domain: 'allday',  domainLabel: '1日を通して', text: '混乱やトラブルなく、過ごせていますか？' }
+    ];
+
+    const DOMAIN_META = [
+      { key: 'morning', label: '朝（Q1〜Q4）',           shortLabel: '朝',       color: '#f59e0b', max: 12, count: 4 },
+      { key: 'day',     label: '日中（Q5〜Q14）',        shortLabel: '日中',     color: '#0f766e', max: 30, count: 10 },
+      { key: 'night',   label: '夜（Q15〜Q17）',         shortLabel: '夜',       color: '#6366f1', max: 9,  count: 3 },
+      { key: 'allday',  label: '1日を通して（Q18〜Q19）', shortLabel: '1日',      color: '#10b981', max: 6,  count: 2 }
+    ];
+
+    const CHOICE_LABELS = [
+      { val: 0, label: '全く違う' },
+      { val: 1, label: 'わずかに' },
+      { val: 2, label: 'かなり' },
+      { val: 3, label: 'その通り' }
+    ];
+
+    const INITIAL_SAMPLE_DATA = {
+      '2026-11-25': {
+        date: '2026-11-25',
+        freq: 1,
+        dose: 18,
+        scores: {
+          1: 2, 2: 2, 3: 3, 4: 3,
+          5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 2, 11: 0, 12: 1, 13: 1, 14: 0,
+          15: 0, 16: 1, 17: 0,
+          18: 2, 19: 1
+        },
+        comments: '起床時に時間・気力がかかる',
+        troubles: '「〜してから」と先延ばしにして前日ギリギリになり、無理やり終わらせようとしてミス・抜け漏れが多くなる。勉強時にじっとしていられない、衝動買い（本を買うが読まない）、電車での置き忘れ、片付けの苦手さ。夜間の過集中と睡眠リズムの乱れ。',
+        goals: '勉強や作業に落ち着いて取り掛かり、計画的に最後までやり遂げられるようになること（先延ばし・ミス・衝動性の軽減と睡眠リズムの安定）。',
+        updatedAt: '2026-11-25T09:00:00.000Z'
+      }
+    };
+
+    const GAS_SOURCE_CODE = `// QAD 毎日の記録・経過管理システム 連携用 Google Apps Script
+const DATA_SHEET_NAME = 'QAD記録一覧';
+const BACKUP_SHEET_NAME = 'JSONバックアップ_システム用';
+
+function doGet(e) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const backupSheet = ss.getSheetByName(BACKUP_SHEET_NAME);
+    if (!backupSheet) {
+      return createJsonResponse({ status: 'ok', records: {}, message: 'バックアップデータはまだありません' });
+    }
+    const rawJson = backupSheet.getRange('A1').getValue();
+    const records = rawJson ? JSON.parse(rawJson) : {};
+    const updatedAt = backupSheet.getRange('A2').getValue() || '';
+    return createJsonResponse({ status: 'ok', records: records, updatedAt: updatedAt });
+  } catch (err) {
+    return createJsonResponse({ status: 'error', message: String(err) });
+  }
+}
+
+function doPost(e) {
+  try {
+    const bodyText = e && e.postData ? e.postData.contents : '';
+    if (!bodyText) {
+      return createJsonResponse({ status: 'error', message: '送信データが空です' });
+    }
+    const payload = JSON.parse(bodyText);
+    const records = payload.records || {};
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    let backupSheet = ss.getSheetByName(BACKUP_SHEET_NAME);
+    if (!backupSheet) {
+      backupSheet = ss.insertSheet(BACKUP_SHEET_NAME);
+    }
+    backupSheet.getRange('A1').setValue(JSON.stringify(records));
+    backupSheet.getRange('A2').setValue(new Date().toISOString());
+
+    let dataSheet = ss.getSheetByName(DATA_SHEET_NAME);
+    if (!dataSheet) {
+      dataSheet = ss.insertSheet(DATA_SHEET_NAME);
+    }
+    dataSheet.clearContents();
+
+    const headers = [
+      '日付', '服用回数(回/日)', '用量(mg/日)',
+      'Q1', 'Q2', 'Q3', 'Q4',
+      'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10', 'Q11', 'Q12', 'Q13', 'Q14',
+      'Q15', 'Q16', 'Q17',
+      'Q18', 'Q19',
+      '朝計(0-12)', '日中計(0-30)', '夜計(0-9)', '1日計(0-6)', '合計点(0-57)',
+      '周囲からのコメント・変化', '現在困っていること', '目標など', '最終更新日時'
+    ];
+
+    const dates = Object.keys(records).sort();
+    const rows = [headers];
+
+    dates.forEach(function(d) {
+      const rec = records[d];
+      const s = rec.scores || {};
+      const qVals = [];
+      for (var i = 1; i <= 19; i++) {
+        qVals.push(Number(s[i] || 0));
+      }
+      const morning = qVals[0] + qVals[1] + qVals[2] + qVals[3];
+      const day = qVals.slice(4, 14).reduce(function(a, b) { return a + b; }, 0);
+      const night = qVals[14] + qVals[15] + qVals[16];
+      const allday = qVals[17] + qVals[18];
+      const total = morning + day + night + allday;
+
+      rows.push([
+        rec.date || d,
+        rec.freq || 0,
+        rec.dose || 0
+      ].concat(qVals).concat([
+        morning, day, night, allday, total,
+        rec.comments || '',
+        rec.troubles || '',
+        rec.goals || '',
+        rec.updatedAt || ''
+      ]));
+    });
+
+    dataSheet.getRange(1, 1, rows.length, headers.length).setValues(rows);
+
+    return createJsonResponse({
+      status: 'ok',
+      count: dates.length,
+      savedAt: new Date().toISOString()
+    });
+  } catch (err) {
+    return createJsonResponse({ status: 'error', message: String(err) });
+  }
+}
+
+function createJsonResponse(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+
+    // アプリ状態
+    let recordsMap = {};
+    let currentFormScores = {};
+    let currentNextVisitDate = '2026-12-09';
+    let currentDraft = null;
+    let gasWebAppUrl = '';
+    let gasAutoSyncEnabled = true;
+    let gasLastSyncText = '';
+    let lastSavedTimestamp = 0;
+    let currentActiveTab = 'input';
+    let trendsRangeFilter = 'all';
+    let trendChartInstance = null;
+    let domainTrendChartInstance = null;
+    let activePdfBlobUrl = null;
+    let activePdfBlob = null;
+    let activePdfFilename = 'QAD.pdf';
+    let activeBackupBlobUrl = null;
+
+    // =========================================================================
+    // 初期化 & 4層ストレージ同期
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', async () => {
+      renderQuestionCards();
+      await hydrateAllStorages();
+
+      syncNextVisitDate(currentNextVisitDate, false);
+      syncGasUrlUI();
+
+      const defaultDate = (currentDraft && currentDraft.date) ? currentDraft.date : getTodayStr();
+      const dateInput = document.getElementById('input-date');
+      dateInput.value = defaultDate;
+      dateInput.addEventListener('change', (e) => {
+        loadRecordIntoForm(e.target.value, true);
+      });
+
+      loadRecordIntoForm(defaultDate, true);
+      updateHeaderBadge();
+    });
+
+    window.addEventListener('pagehide', () => {
+      persistDraftState();
+      flushAllStorages();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        persistDraftState();
+        flushAllStorages();
+      }
+    });
+
+    window.addEventListener('pageshow', async (event) => {
+      if (event.persisted) {
+        await hydrateAllStorages();
+        syncGasUrlUI();
+        updateHeaderBadge();
+        if (currentActiveTab === 'history') renderHistoryCards();
+        else if (currentActiveTab === 'trends') renderTrendsDashboard();
+        else if (currentActiveTab === 'form') {
+          populateFormDateSelector();
+          renderClinicForm();
+        }
+      }
+    });
+
+    function getTodayStr() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function syncNextVisitDate(val, shouldPersist = true) {
+      if (!val) return;
+      currentNextVisitDate = val;
+      const inputEl = document.getElementById('input-next-visit');
+      const formEl = document.getElementById('form-next-visit');
+      if (inputEl && inputEl.value !== val) inputEl.value = val;
+      if (formEl && formEl.value !== val) formEl.value = val;
+      if (shouldPersist) flushAllStorages();
+    }
+
+    function openIdb() {
+      return new Promise((resolve) => {
+        if (!('indexedDB' in window)) return resolve(null);
+        try {
+          const req = indexedDB.open(IDB_NAME, 1);
+          req.onupgradeneeded = () => {
+            const db = req.result;
+            if (!db.objectStoreNames.contains(IDB_STORE)) {
+              db.createObjectStore(IDB_STORE);
+            }
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => resolve(null);
+        } catch (e) {
+          resolve(null);
+        }
+      });
+    }
+
+    async function readFromIdb() {
+      const db = await openIdb();
+      if (!db) return null;
+      return new Promise((resolve) => {
+        try {
+          const tx = db.transaction(IDB_STORE, 'readonly');
+          const req = tx.objectStore(IDB_STORE).get('snapshot');
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        } catch (e) {
+          resolve(null);
+        }
+      });
+    }
+
+    async function writeToIdb(snapshot) {
+      const db = await openIdb();
+      if (!db) return;
+      try {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).put(snapshot, 'snapshot');
+      } catch (e) {}
+    }
+
+    function readWebStorage(storageObj) {
+      try {
+        const rawRecords = storageObj.getItem(STORAGE_KEY);
+        if (!rawRecords) return null;
+        const parsedRecords = JSON.parse(rawRecords);
+        const nextVisit = storageObj.getItem(NEXT_VISIT_KEY) || '2026-12-09';
+        const rawDraft = storageObj.getItem(DRAFT_KEY);
+        const draft = rawDraft ? JSON.parse(rawDraft) : null;
+        const gasUrl = storageObj.getItem(GAS_URL_KEY) || '';
+        const gasLastSync = storageObj.getItem(GAS_LAST_SYNC_KEY) || '';
+        const savedAt = Number(storageObj.getItem(META_SAVED_AT_KEY) || 0);
+        return { records: parsedRecords, nextVisit, draft, gasUrl, gasLastSync, savedAt };
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function readWindowNameBackup() {
+      try {
+        if (typeof window.name === 'string' && window.name.startsWith(WINDOW_NAME_PREFIX)) {
+          return JSON.parse(window.name.slice(WINDOW_NAME_PREFIX.length));
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    async function hydrateAllStorages() {
+      const candidates = [];
+      const ls = readWebStorage(window.localStorage);
+      if (ls && ls.records) candidates.push(ls);
+      const ss = readWebStorage(window.sessionStorage);
+      if (ss && ss.records) candidates.push(ss);
+      const wn = readWindowNameBackup();
+      if (wn && wn.records) candidates.push(wn);
+      const idb = await readFromIdb();
+      if (idb && idb.records) candidates.push(idb);
+
+      if (candidates.length === 0) {
+        recordsMap = JSON.parse(JSON.stringify(INITIAL_SAMPLE_DATA));
+        currentNextVisitDate = '2026-12-09';
+        currentDraft = null;
+        gasWebAppUrl = '';
+        gasLastSyncText = '';
+        lastSavedTimestamp = Date.now();
+        flushAllStorages();
+        return;
+      }
+
+      candidates.sort((a, b) => {
+        const diffTs = (b.savedAt || 0) - (a.savedAt || 0);
+        if (diffTs !== 0) return diffTs;
+        return Object.keys(b.records || {}).length - Object.keys(a.records || {}).length;
+      });
+
+      const best = candidates[0];
+      recordsMap = best.records || JSON.parse(JSON.stringify(INITIAL_SAMPLE_DATA));
+      currentNextVisitDate = best.nextVisit || '2026-12-09';
+      currentDraft = best.draft || null;
+      gasWebAppUrl = best.gasUrl || candidates.find(c => c.gasUrl)?.gasUrl || '';
+      gasAutoSyncEnabled = (best.gasAutoSync !== undefined) ? Boolean(best.gasAutoSync) : true;
+      gasLastSyncText = best.gasLastSync || candidates.find(c => c.gasLastSync)?.gasLastSync || '';
+      lastSavedTimestamp = best.savedAt || Date.now();
+
+      flushAllStorages(false);
+    }
+
+    function flushAllStorages(updateTimestamp = true) {
+      if (updateTimestamp) lastSavedTimestamp = Date.now();
+      const snapshot = {
+        records: recordsMap,
+        nextVisit: currentNextVisitDate,
+        draft: currentDraft,
+        gasUrl: gasWebAppUrl,
+        gasAutoSync: gasAutoSyncEnabled,
+        gasLastSync: gasLastSyncText,
+        savedAt: lastSavedTimestamp
+      };
+
+      const writeWeb = (storageObj) => {
+        try {
+          storageObj.setItem(STORAGE_KEY, JSON.stringify(snapshot.records));
+          storageObj.setItem(NEXT_VISIT_KEY, snapshot.nextVisit);
+          if (snapshot.draft) storageObj.setItem(DRAFT_KEY, JSON.stringify(snapshot.draft));
+          else storageObj.removeItem(DRAFT_KEY);
+          if (snapshot.gasUrl) storageObj.setItem(GAS_URL_KEY, snapshot.gasUrl);
+          else storageObj.removeItem(GAS_URL_KEY);
+          if (snapshot.gasLastSync) storageObj.setItem(GAS_LAST_SYNC_KEY, snapshot.gasLastSync);
+          storageObj.setItem(META_SAVED_AT_KEY, String(snapshot.savedAt));
+        } catch (e) {}
+      };
+
+      writeWeb(window.localStorage);
+      writeWeb(window.sessionStorage);
+      try { window.name = WINDOW_NAME_PREFIX + JSON.stringify(snapshot); } catch (e) {}
+      writeToIdb(snapshot);
+      updateHeaderBadge();
+    }
+
+    function persistDraftState() {
+      const dateEl = document.getElementById('input-date');
+      if (!dateEl || !dateEl.value) return;
+      currentDraft = {
+        date: dateEl.value,
+        freq: Number(document.getElementById('input-freq')?.value ?? 1),
+        dose: Number(document.getElementById('input-dose')?.value ?? 18),
+        scores: { ...currentFormScores },
+        comments: document.getElementById('memo-comments')?.value || '',
+        troubles: document.getElementById('memo-troubles')?.value || '',
+        goals: document.getElementById('memo-goals')?.value || ''
+      };
+      flushAllStorages();
+    }
+
+    function getSortedDatesAsc() { return Object.keys(recordsMap).sort((a, b) => a.localeCompare(b)); }
+    function getSortedDatesDesc() { return Object.keys(recordsMap).sort((a, b) => b.localeCompare(a)); }
+
+    function updateHeaderBadge() {
+      const count = Object.keys(recordsMap).length;
+      const badge = document.getElementById('header-sync-dot');
+      if (badge) badge.textContent = `記録 ${count}日分`;
+    }
+
+    // =========================================================================
+    // Google Apps Script（GAS）連携
+    // =========================================================================
+    function toggleGasAutoSync(checked) {
+      gasAutoSyncEnabled = Boolean(checked);
+      flushAllStorages();
+      showToast(gasAutoSyncEnabled ? '記録保存時の自動シート送信をONにしました' : '自動シート送信をOFFにしました', 'info');
+    }
+
+    function syncGasUrlUI() {
+      const urlInput = document.getElementById('gas-webapp-url');
+      const toggleEl = document.getElementById('gas-auto-sync-toggle');
+      const statusEl = document.getElementById('gas-sync-status');
+      if (urlInput) urlInput.value = gasWebAppUrl || '';
+      if (toggleEl) toggleEl.checked = gasAutoSyncEnabled;
+      if (statusEl) {
+        if (gasLastSyncText) statusEl.textContent = gasLastSyncText;
+        else if (gasWebAppUrl) statusEl.textContent = 'URL設定済み（未同期）';
+        else statusEl.textContent = '未設定（GAS URLを貼り付けて保存）';
+      }
+    }
+
+    function saveGasWebAppUrl() {
+      const val = (document.getElementById('gas-webapp-url')?.value || '').trim();
+      if (val && !val.startsWith('https://script.google.com/')) {
+        showToast('https://script.google.com/ で始まるURLを入力してください', 'warn');
+        return;
+      }
+      gasWebAppUrl = val;
+      flushAllStorages();
+      syncGasUrlUI();
+      showToast(val ? 'GAS URLを保存しました' : 'GAS URLをクリアしました', val ? 'success' : 'info');
+    }
+
+    function openGasCodeModal() {
+      document.getElementById('gas-source-textarea').value = GAS_SOURCE_CODE;
+      document.getElementById('gas-code-modal').classList.remove('hidden');
+    }
+
+    function closeGasCodeModal() {
+      document.getElementById('gas-code-modal').classList.add('hidden');
+    }
+
+    function copyGasSourceCode() {
+      const ta = document.getElementById('gas-source-textarea');
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      showToast(ok ? 'GASコードをコピーしました' : '枠内を全選択してコピーしてください', ok ? 'success' : 'warn');
+    }
+
+    function formatNowDateTime() {
+      const now = new Date();
+      return `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    }
+
+    async function silentAutoBackupToSheets() {
+      if (!gasWebAppUrl) return;
+      try {
+        const res = await fetch(gasWebAppUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'backup', records: recordsMap })
+        });
+        const result = await res.json();
+        if (result && result.status === 'ok') {
+          const count = result.count ?? Object.keys(recordsMap).length;
+          gasLastSyncText = `自動保存済: ${formatNowDateTime()}（${count}日分）`;
+          flushAllStorages();
+          syncGasUrlUI();
+        }
+      } catch (e) {}
+    }
+
+    async function backupToGoogleSheets(btnEl) {
+      const inputVal = (document.getElementById('gas-webapp-url')?.value || '').trim();
+      if (inputVal && inputVal !== gasWebAppUrl) {
+        gasWebAppUrl = inputVal;
+        flushAllStorages();
+      }
+      if (!gasWebAppUrl) {
+        showToast('先にGASのURLを入力して保存してください', 'warn');
+        return;
+      }
+
+      const origText = btnEl.textContent;
+      try {
+        btnEl.disabled = true;
+        btnEl.textContent = '送信中...';
+        const res = await fetch(gasWebAppUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'backup', records: recordsMap })
+        });
+        const result = await res.json();
+        if (result && result.status === 'ok') {
+          const count = result.count ?? Object.keys(recordsMap).length;
+          gasLastSyncText = `最終保存: ${formatNowDateTime()}（${count}日分）`;
+          flushAllStorages();
+          syncGasUrlUI();
+          showToast(`スプレッドシートへ ${count}日分を保存しました`, 'success');
+        } else {
+          throw new Error(result?.message || 'Error');
+        }
+      } catch (err) {
+        showToast('送信に失敗しました。URLとアクセス権限（全員）を確認してください', 'error');
+      } finally {
+        btnEl.disabled = false;
+        btnEl.textContent = origText;
+      }
+    }
+
+    async function restoreFromGoogleSheets(btnEl) {
+      const inputVal = (document.getElementById('gas-webapp-url')?.value || '').trim();
+      if (inputVal && inputVal !== gasWebAppUrl) {
+        gasWebAppUrl = inputVal;
+        flushAllStorages();
+      }
+      if (!gasWebAppUrl) {
+        showToast('先にGASのURLを入力して保存してください', 'warn');
+        return;
+      }
+
+      const origText = btnEl.textContent;
+      try {
+        btnEl.disabled = true;
+        btnEl.textContent = '読込中...';
+        const sep = gasWebAppUrl.includes('?') ? '&' : '?';
+        const res = await fetch(`${gasWebAppUrl}${sep}t=${Date.now()}`);
+        const result = await res.json();
+        if (result && result.status === 'ok' && result.records) {
+          let importedCount = 0;
+          Object.keys(result.records).forEach(key => {
+            if (/^\d{4}-\d{2}-\d{2}$/.test(key) && result.records[key].scores) {
+              recordsMap[key] = result.records[key];
+              importedCount++;
+            }
+          });
+          if (importedCount === 0) {
+            showToast('シート上に記録データが見つかりませんでした', 'warn');
+            return;
+          }
+          gasLastSyncText = `最終復元: ${formatNowDateTime()}（${importedCount}日分）`;
+          flushAllStorages();
+          syncGasUrlUI();
+          renderHistoryCards();
+          loadRecordIntoForm(document.getElementById('input-date').value, false);
+          showToast(`シートから ${importedCount}日分を復元しました`, 'success');
+        } else {
+          throw new Error('Error');
+        }
+      } catch (err) {
+        showToast('復元に失敗しました。URLとデプロイ設定を確認してください', 'error');
+      } finally {
+        btnEl.disabled = false;
+        btnEl.textContent = origText;
+      }
+    }
+
+    // =========================================================================
+    // 集計 & タブ切り替え
+    // =========================================================================
+    function calculateMetrics(scoresObj) {
+      let morning = 0, day = 0, night = 0, allday = 0;
+      let counts = { 0: 0, 1: 0, 2: 0, 3: 0 };
+      let answered = 0;
+
+      QAD_QUESTIONS.forEach(q => {
+        const v = scoresObj[q.id];
+        if (v !== null && v !== undefined && v !== '') {
+          const num = Number(v);
+          answered++;
+          if (counts[num] !== undefined) counts[num]++;
+          if (q.domain === 'morning') morning += num;
+          else if (q.domain === 'day') day += num;
+          else if (q.domain === 'night') night += num;
+          else if (q.domain === 'allday') allday += num;
+        }
+      });
+
+      const total = morning + day + night + allday;
+      const avg = answered > 0 ? (total / answered) : 0;
+      return { morning, day, night, allday, total, avg, counts, answered, unanswered: 19 - answered };
+    }
+
+    function setPrintOrientation(orientation) {
+      const styleTag = document.getElementById('dynamic-print-page-style');
+      if (!styleTag) return;
+      styleTag.textContent = orientation === 'landscape'
+        ? `@media print { @page { size: A4 landscape; margin: 8mm 10mm; } }`
+        : `@media print { @page { size: A4 portrait; margin: 8mm 10mm; } }`;
+    }
+
+    function switchTab(tabName) {
+      currentActiveTab = tabName;
+      ['input', 'history', 'trends', 'form'].forEach(t => {
+        const view = document.getElementById(`view-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (t === tabName) {
+          view.classList.remove('hidden');
+          btn.classList.add('active');
+        } else {
+          view.classList.add('hidden');
+          btn.classList.remove('active');
+        }
+      });
+
+      if (tabName === 'history') {
+        syncGasUrlUI();
+        renderHistoryCards();
+      } else if (tabName === 'trends') {
+        setPrintOrientation('landscape');
+        renderTrendsDashboard();
+      } else if (tabName === 'form') {
+        setPrintOrientation('portrait');
+        populateFormDateSelector();
+        renderClinicForm();
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // =========================================================================
+    // 1. 毎日の入力画面ロジック
+    // =========================================================================
+    function setDosePreset(freq, dose) {
+      document.getElementById('input-freq').value = String(freq);
+      document.getElementById('input-dose').value = dose;
+      syncDosePresetHighlight();
+      persistDraftState();
+    }
+
+    function onFreqChange() {
+      const freq = Number(document.getElementById('input-freq').value);
+      const doseInput = document.getElementById('input-dose');
+      if (freq === 0) doseInput.value = 0;
+      else if (Number(doseInput.value) === 0) doseInput.value = 18;
+      syncDosePresetHighlight();
+      persistDraftState();
+    }
+
+    function syncDosePresetHighlight() {
+      const currentDose = Number(document.getElementById('input-dose').value);
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        const btnDose = Number(btn.getAttribute('data-dose'));
+        btn.classList.toggle('active', btnDose === currentDose);
+      });
+    }
+
+    function renderQuestionCards() {
+      const container = document.getElementById('questions-container');
+      container.innerHTML = '';
+
+      DOMAIN_META.forEach(domain => {
+        const domainQuestions = QAD_QUESTIONS.filter(q => q.domain === domain.key);
+        const card = document.createElement('div');
+        card.className = 'q-domain-card';
+
+        const rowsHtml = domainQuestions.map(q => {
+          const buttonsHtml = CHOICE_LABELS.map(c => `
+            <button type="button"
+              id="q-btn-${q.id}-${c.val}"
+              onclick="selectScore(${q.id}, ${c.val})"
+              class="seg-btn seg-btn-${c.val}">
+              <span class="val">${c.val}</span>
+              <span class="lbl">${c.label}</span>
+            </button>
+          `).join('');
+
+          return `
+            <div class="q-item">
+              <div class="q-text-row">
+                <span class="q-num">Q${q.id}</span>
+                <p class="q-text">${q.text}</p>
+              </div>
+              <div class="seg-grid">${buttonsHtml}</div>
+            </div>
+          `;
+        }).join('');
+
+        card.innerHTML = `
+          <div class="q-domain-head">
+            <div class="q-domain-title"><span class="q-domain-dot"></span>${domain.label}</div>
+            <span class="badge-pill"><span id="card-sub-${domain.key}">0</span> / ${domain.max}点</span>
+          </div>
+          <div>${rowsHtml}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function selectScore(qId, val) {
+      currentFormScores[qId] = (currentFormScores[qId] === val) ? null : val;
+      refreshQuestionButtonsUI();
+      updateLiveAggregation();
+      persistDraftState();
+    }
+
+    function refreshQuestionButtonsUI() {
+      QAD_QUESTIONS.forEach(q => {
+        const selected = currentFormScores[q.id];
+        [0, 1, 2, 3].forEach(val => {
+          const btn = document.getElementById(`q-btn-${q.id}-${val}`);
+          if (btn) btn.classList.toggle('active', selected === val);
+        });
+      });
+    }
+
+    function updateLiveAggregation() {
+      const m = calculateMetrics(currentFormScores);
+      document.getElementById('card-sub-morning').textContent = m.morning;
+      document.getElementById('card-sub-day').textContent = m.day;
+      document.getElementById('card-sub-night').textContent = m.night;
+      document.getElementById('card-sub-allday').textContent = m.allday;
+
+      document.getElementById('live-sub-morning').textContent = m.morning;
+      document.getElementById('live-sub-day').textContent = m.day;
+      document.getElementById('live-sub-night').textContent = m.night;
+      document.getElementById('live-sub-allday').textContent = m.allday;
+
+      document.getElementById('live-total-score').textContent = m.total;
+      const unansweredEl = document.getElementById('live-unanswered');
+      if (m.unanswered === 0) {
+        unansweredEl.textContent = '全19問完了';
+        unansweredEl.style.color = '#6ee7b7';
+      } else {
+        unansweredEl.textContent = `未入力 ${m.unanswered}問`;
+        unansweredEl.style.color = '#fbbf24';
+      }
+    }
+
+    function loadRecordIntoForm(dateStr, allowDraftRestore = true) {
+      const existing = recordsMap[dateStr];
+      const statusBadge = document.getElementById('input-edit-status');
+
+      if (allowDraftRestore && currentDraft && currentDraft.date === dateStr) {
+        document.getElementById('input-freq').value = String(currentDraft.freq ?? 1);
+        document.getElementById('input-dose').value = currentDraft.dose ?? 18;
+        currentFormScores = {};
+        QAD_QUESTIONS.forEach(q => {
+          const val = currentDraft.scores ? currentDraft.scores[q.id] : null;
+          currentFormScores[q.id] = (val !== undefined && val !== null) ? Number(val) : null;
+        });
+        document.getElementById('memo-comments').value = currentDraft.comments || '';
+        document.getElementById('memo-troubles').value = currentDraft.troubles || '';
+        document.getElementById('memo-goals').value = currentDraft.goals || '';
+        statusBadge.textContent = '入力途中';
+      } else if (existing) {
+        document.getElementById('input-freq').value = String(existing.freq ?? 1);
+        document.getElementById('input-dose').value = existing.dose ?? 18;
+        currentFormScores = {};
+        QAD_QUESTIONS.forEach(q => {
+          const val = existing.scores ? existing.scores[q.id] : null;
+          currentFormScores[q.id] = (val !== undefined && val !== null) ? Number(val) : null;
+        });
+        document.getElementById('memo-comments').value = existing.comments || '';
+        document.getElementById('memo-troubles').value = existing.troubles || '';
+        document.getElementById('memo-goals').value = existing.goals || '';
+        statusBadge.textContent = '保存済';
+      } else {
+        const dates = getSortedDatesDesc();
+        const latestRec = dates.length > 0 ? recordsMap[dates[0]] : null;
+        document.getElementById('input-freq').value = String(latestRec ? (latestRec.freq ?? 1) : 1);
+        document.getElementById('input-dose').value = latestRec ? (latestRec.dose ?? 18) : 18;
+        currentFormScores = {};
+        QAD_QUESTIONS.forEach(q => { currentFormScores[q.id] = null; });
+        document.getElementById('memo-comments').value = '';
+        document.getElementById('memo-troubles').value = '';
+        document.getElementById('memo-goals').value = '';
+        statusBadge.textContent = '新規記録';
+      }
+
+      syncDosePresetHighlight();
+      refreshQuestionButtonsUI();
+      updateLiveAggregation();
+    }
+
+    function copyFromPreviousRecord() {
+      const currentDate = document.getElementById('input-date').value;
+      const dates = getSortedDatesDesc().filter(d => d !== currentDate);
+      if (dates.length === 0) {
+        showToast('コピー元の過去記録がありません', 'warn');
+        return;
+      }
+      const priorDates = dates.filter(d => d < currentDate);
+      const sourceDate = priorDates.length > 0 ? priorDates[0] : dates[0];
+      const src = recordsMap[sourceDate];
+
+      document.getElementById('input-freq').value = String(src.freq ?? 1);
+      document.getElementById('input-dose').value = src.dose ?? 18;
+      document.getElementById('memo-comments').value = src.comments || '';
+      document.getElementById('memo-troubles').value = src.troubles || '';
+      document.getElementById('memo-goals').value = src.goals || '';
+
+      syncDosePresetHighlight();
+      persistDraftState();
+      showToast(`${sourceDate} の服薬とメモをコピーしました`, 'success');
+    }
+
+    function clearCurrentForm() {
+      currentFormScores = {};
+      QAD_QUESTIONS.forEach(q => { currentFormScores[q.id] = null; });
+      document.getElementById('memo-comments').value = '';
+      document.getElementById('memo-troubles').value = '';
+      document.getElementById('memo-goals').value = '';
+      currentDraft = null;
+      flushAllStorages();
+      refreshQuestionButtonsUI();
+      updateLiveAggregation();
+      showToast('入力内容をリセットしました', 'info');
+    }
+
+    function saveCurrentRecord(silent = false) {
+      const dateStr = document.getElementById('input-date').value;
+      if (!dateStr) {
+        showToast('記録日を選択してください', 'error');
+        return false;
+      }
+      const m = calculateMetrics(currentFormScores);
+      if (m.answered === 0) {
+        showToast('1項目以上スコアを選択してください', 'warn');
+        return false;
+      }
+
+      const scoresClean = {};
+      QAD_QUESTIONS.forEach(q => {
+        scoresClean[q.id] = currentFormScores[q.id] !== null ? Number(currentFormScores[q.id]) : 0;
+      });
+
+      recordsMap[dateStr] = {
+        date: dateStr,
+        freq: Number(document.getElementById('input-freq').value || 0),
+        dose: Number(document.getElementById('input-dose').value || 0),
+        scores: scoresClean,
+        comments: document.getElementById('memo-comments').value.trim(),
+        troubles: document.getElementById('memo-troubles').value.trim(),
+        goals: document.getElementById('memo-goals').value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+
+      currentFormScores = { ...scoresClean };
+      currentDraft = null;
+      refreshQuestionButtonsUI();
+      updateLiveAggregation();
+      flushAllStorages();
+
+      document.getElementById('input-edit-status').textContent = '保存済';
+      if (!silent) {
+        showToast(`${dateStr} の記録（合計 ${m.total}点）を保存しました`, 'success');
+      }
+      if (gasWebAppUrl && gasAutoSyncEnabled) {
+        silentAutoBackupToSheets();
+      }
+      return true;
+    }
+
+    function saveAndOpenForm() {
+      if (saveCurrentRecord(true)) {
+        const dateStr = document.getElementById('input-date').value;
+        switchTab('form');
+        const sel = document.getElementById('form-select-date');
+        if (sel) {
+          sel.value = dateStr;
+          renderClinicForm();
+        }
+        showToast(`${dateStr} の問診票を表示しました`, 'success');
+      }
+    }
+
+    // =========================================================================
+    // 2. 履歴一覧カード描画 & CSV/JSONバックアップ
+    // =========================================================================
+    function renderHistoryCards() {
+      const container = document.getElementById('history-list-container');
+      const emptyState = document.getElementById('history-empty-state');
+      const dates = getSortedDatesDesc();
+
+      if (dates.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      container.innerHTML = dates.map(dateStr => {
+        const rec = recordsMap[dateStr];
+        const m = calculateMetrics(rec.scores || {});
+        const doseText = (rec.dose && rec.dose > 0) ? `${rec.freq || 1}回 / ${rec.dose}mg` : '服薬なし';
+        const memoSummary = rec.troubles || rec.comments || rec.goals || 'メモなし';
+        const chipCls = m.total >= 38 ? 'chip-3' : (m.total >= 26 ? 'chip-2' : (m.total >= 15 ? 'chip-1' : 'chip-0'));
+
+        return `
+          <div class="history-item-card" onclick="editRecordFromHistory('${dateStr}')">
+            <div class="history-item-top">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="history-date">${dateStr}</span>
+                <span class="history-dose">${doseText}</span>
+              </div>
+              <span class="${chipCls}" style="padding:3px 10px; border-radius:9px; font-size:13px; font-weight:800;">
+                合計 ${m.total}点
+              </span>
+            </div>
+            <div class="history-domains">
+              <div>朝<strong>${m.morning}/12</strong></div>
+              <div>日中<strong>${m.day}/30</strong></div>
+              <div>夜<strong>${m.night}/9</strong></div>
+              <div>1日<strong>${m.allday}/6</strong></div>
+            </div>
+            <div class="history-memo">${escapeHtml(memoSummary)}</div>
+            <div class="history-actions" onclick="event.stopPropagation()">
+              <div class="dist-mini">
+                <span class="chip-0">0:${m.counts[0]}</span>
+                <span class="chip-1">1:${m.counts[1]}</span>
+                <span class="chip-2">2:${m.counts[2]}</span>
+                <span class="chip-3">3:${m.counts[3]}</span>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <button type="button" onclick="openFormForDate('${dateStr}')" class="btn btn-soft btn-sm">問診票</button>
+                <button type="button" onclick="confirmDeleteRecord('${dateStr}')" class="btn btn-danger btn-sm">削除</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function editRecordFromHistory(dateStr) {
+      document.getElementById('input-date').value = dateStr;
+      loadRecordIntoForm(dateStr, false);
+      switchTab('input');
+    }
+
+    function openFormForDate(dateStr) {
+      switchTab('form');
+      const sel = document.getElementById('form-select-date');
+      if (sel) {
+        sel.value = dateStr;
+        renderClinicForm();
+      }
+    }
+
+    function confirmDeleteRecord(dateStr) {
+      document.getElementById('confirm-title').textContent = '記録の削除';
+      document.getElementById('confirm-message').textContent = `${dateStr} の記録を削除しますか？`;
+      const modal = document.getElementById('confirm-modal');
+      modal.classList.remove('hidden');
+
+      document.getElementById('confirm-cancel-btn').onclick = () => modal.classList.add('hidden');
+      document.getElementById('confirm-ok-btn').onclick = () => {
+        modal.classList.add('hidden');
+        delete recordsMap[dateStr];
+        if (currentDraft && currentDraft.date === dateStr) currentDraft = null;
+        flushAllStorages();
+        renderHistoryCards();
+        if (document.getElementById('input-date').value === dateStr) {
+          loadRecordIntoForm(dateStr, false);
+        }
+        showToast(`${dateStr} の記録を削除しました`, 'info');
+      };
+    }
+
+    function exportCSV() {
+      const dates = getSortedDatesAsc();
+      if (dates.length === 0) {
+        showToast('記録データがありません', 'warn');
+        return;
+      }
+      const headers = [
+        '日付', '服用回数', '用量(mg)',
+        ...QAD_QUESTIONS.map(q => `Q${q.id}`),
+        '朝計', '日中計', '夜計', '1日計', '合計点',
+        'コメント', '困っていること', '目標'
+      ];
+      const rows = dates.map(d => {
+        const rec = recordsMap[d];
+        const m = calculateMetrics(rec.scores || {});
+        const qVals = QAD_QUESTIONS.map(q => rec.scores?.[q.id] ?? 0);
+        return [
+          rec.date, rec.freq ?? 0, rec.dose ?? 0,
+          ...qVals,
+          m.morning, m.day, m.night, m.allday, m.total,
+          rec.comments || '', rec.troubles || '', rec.goals || ''
+        ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+      });
+      const csvBody = [headers.join(','), ...rows].join('\r\n');
+      openBackupModalWithData(
+        `CSV出力（${dates.length}日分）`,
+        '「ファイル保存（別タブ）」または「全文をコピー」で保存できます。',
+        csvBody,
+        '\uFEFF' + csvBody,
+        `QAD_記録_${getTodayStr()}.csv`,
+        'text/csv;charset=utf-8;'
+      );
+    }
+
+    function openBackupExportModal() {
+      const dataStr = JSON.stringify(recordsMap, null, 2);
+      openBackupModalWithData(
+        'JSONバックアップ書き出し',
+        'メモアプリ等にコピーして保管するか、別タブからファイル保存できます。',
+        dataStr,
+        dataStr,
+        `QAD_バックアップ_${getTodayStr()}.json`,
+        'application/json;charset=utf-8;'
+      );
+    }
+
+    function openBackupModalWithData(title, desc, displayText, blobContent, filename, mimeType) {
+      flushAllStorages();
+      if (activeBackupBlobUrl) URL.revokeObjectURL(activeBackupBlobUrl);
+      const blob = new Blob([blobContent], { type: mimeType });
+      activeBackupBlobUrl = URL.createObjectURL(blob);
+
+      document.getElementById('backup-modal-title').textContent = title;
+      document.getElementById('backup-modal-desc').textContent = desc;
+      const ta = document.getElementById('backup-textarea');
+      ta.value = displayText;
+      ta.readOnly = true;
+
+      const dl = document.getElementById('backup-download-link');
+      dl.href = activeBackupBlobUrl;
+      dl.download = filename;
+
+      document.getElementById('backup-export-actions').classList.remove('hidden');
+      document.getElementById('backup-import-actions').classList.add('hidden');
+      document.getElementById('data-backup-modal').classList.remove('hidden');
+    }
+
+    function openBackupImportModal() {
+      document.getElementById('backup-modal-title').textContent = 'JSONバックアップから復元';
+      document.getElementById('backup-modal-desc').textContent = 'コピーしておいたバックアップテキストを下に貼り付けて「この内容から復元する」を押してください。';
+      const ta = document.getElementById('backup-textarea');
+      ta.value = '';
+      ta.readOnly = false;
+      ta.placeholder = '{ "2026-11-25": { ... } } を貼り付け';
+
+      document.getElementById('backup-export-actions').classList.add('hidden');
+      document.getElementById('backup-import-actions').classList.remove('hidden');
+      document.getElementById('data-backup-modal').classList.remove('hidden');
+    }
+
+    function closeBackupModal() {
+      document.getElementById('data-backup-modal').classList.add('hidden');
+    }
+
+    function copyBackupTextarea() {
+      const ta = document.getElementById('backup-textarea');
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      showToast(ok ? 'クリップボードにコピーしました' : '枠内を全選択してコピーしてください', ok ? 'success' : 'warn');
+    }
+
+    function executeJsonRestore() {
+      const raw = (document.getElementById('backup-textarea').value || '').trim();
+      if (!raw) {
+        showToast('テキストを貼り付けてください', 'warn');
+        return;
+      }
+      try {
+        const parsed = JSON.parse(raw);
+        let cnt = 0;
+        Object.keys(parsed).forEach(k => {
+          if (/^\d{4}-\d{2}-\d{2}$/.test(k) && parsed[k].scores) {
+            recordsMap[k] = parsed[k];
+            cnt++;
+          }
+        });
+        if (cnt === 0) throw new Error('No records');
+        flushAllStorages();
+        renderHistoryCards();
+        loadRecordIntoForm(document.getElementById('input-date').value, false);
+        closeBackupModal();
+        showToast(`${cnt}日分の記録を復元しました`, 'success');
+      } catch (e) {
+        showToast('JSONの形式が正しくありません', 'error');
+      }
+    }
+
+    // =========================================================================
+    // 3. 推移サマリー画面ロジック
+    // =========================================================================
+    function setTrendsRange(rangeKey) {
+      trendsRangeFilter = rangeKey;
+      ['all', '30', '7'].forEach(k => {
+        const btn = document.getElementById(`range-btn-${k}`);
+        if (!btn) return;
+        btn.style.background = (k === rangeKey) ? '#ffffff' : 'transparent';
+        btn.style.color = (k === rangeKey) ? '#0f766e' : '#475569';
+      });
+      renderTrendsDashboard();
+    }
+
+    function renderTrendsDashboard() {
+      const allDatesAsc = getSortedDatesAsc();
+      const printMeta = document.getElementById('trends-print-meta');
+
+      if (allDatesAsc.length === 0) {
+        if (printMeta) printMeta.textContent = `出力日: ${getTodayStr()}（記録なし）`;
+        return;
+      }
+
+      const fullSeries = allDatesAsc.map(d => {
+        const rec = recordsMap[d];
+        return { date: d, rec, m: calculateMetrics(rec.scores || {}) };
+      });
+
+      const movingAvg7Full = fullSeries.map((_, idx) => {
+        const slice = fullSeries.slice(Math.max(0, idx - 6), idx + 1);
+        const sum = slice.reduce((acc, item) => acc + item.m.total, 0);
+        return Number((sum / slice.length).toFixed(2));
+      });
+
+      let startIdx = 0;
+      let rangeLabel = '全期間';
+      if (trendsRangeFilter === '7') {
+        startIdx = Math.max(0, fullSeries.length - 7);
+        rangeLabel = '直近7日';
+      } else if (trendsRangeFilter === '30') {
+        startIdx = Math.max(0, fullSeries.length - 30);
+        rangeLabel = '直近30日';
+      }
+
+      const series = fullSeries.slice(startIdx);
+      const movingAvg7 = movingAvg7Full.slice(startIdx);
+      const count = series.length;
+      const first = series[0];
+      const latest = series[series.length - 1];
+      const totals = series.map(s => s.m.total);
+      const allAvg = totals.reduce((a, b) => a + b, 0) / count;
+      const recent7 = fullSeries.slice(-7);
+      const avg7 = recent7.reduce((a, s) => a + s.m.total, 0) / recent7.length;
+      const diffFromFirst = latest.m.total - first.m.total;
+
+      if (printMeta) {
+        printMeta.textContent = `${rangeLabel}（${first.date} 〜 ${latest.date}） / 出力: ${getTodayStr()}`;
+      }
+
+      document.getElementById('kpi-days').textContent = count;
+      document.getElementById('kpi-latest-score').textContent = latest.m.total;
+      document.getElementById('kpi-latest-date').textContent = latest.date;
+      document.getElementById('kpi-all-avg').textContent = allAvg.toFixed(1);
+      document.getElementById('kpi-7d-avg').textContent = avg7.toFixed(1);
+      document.getElementById('kpi-max-score').textContent = Math.max(...totals);
+      document.getElementById('kpi-min-score').textContent = Math.min(...totals);
+
+      const diffEl = document.getElementById('kpi-diff-baseline');
+      if (count === 1) {
+        diffEl.textContent = '基準日';
+        diffEl.style.color = '#475569';
+      } else {
+        diffEl.textContent = `${diffFromFirst > 0 ? '+' : ''}${diffFromFirst}点`;
+        diffEl.style.color = diffFromFirst >= 0 ? '#059669' : '#d97706';
+      }
+
+      if (typeof Chart !== 'undefined') {
+        renderTotalTrendChart(series, movingAvg7);
+        renderDomainTrendChart(series);
+      }
+      renderDomainSummaryTable(series, latest);
+      renderWeeklySummaryTable(fullSeries);
+    }
+
+    function renderTotalTrendChart(series, movingAvg7) {
+      const ctx = document.getElementById('chart-total-trend').getContext('2d');
+      if (trendChartInstance) trendChartInstance.destroy();
+
+      trendChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: series.map(s => s.date.slice(5)),
+          datasets: [
+            {
+              label: '合計点 (0-57)',
+              data: series.map(s => s.m.total),
+              borderColor: '#0f766e',
+              backgroundColor: 'rgba(15, 118, 110, 0.12)',
+              borderWidth: 2.5,
+              pointRadius: 4,
+              fill: true,
+              tension: 0.2
+            },
+            {
+              label: '7日移動平均',
+              data: movingAvg7,
+              borderColor: '#e11d48',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              pointRadius: 2,
+              fill: false,
+              tension: 0.25
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } } },
+          scales: {
+            y: { min: 0, max: 57, ticks: { stepSize: 10, font: { size: 10 } } },
+            x: { ticks: { font: { size: 10 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function renderDomainTrendChart(series) {
+      const ctx = document.getElementById('chart-domain-trend').getContext('2d');
+      if (domainTrendChartInstance) domainTrendChartInstance.destroy();
+
+      domainTrendChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: series.map(s => s.date.slice(5)),
+          datasets: DOMAIN_META.map(d => ({
+            label: d.shortLabel,
+            data: series.map(s => Number((s.m[d.key] / d.count).toFixed(2))),
+            borderColor: d.color,
+            backgroundColor: d.color,
+            borderWidth: 2,
+            pointRadius: 3,
+            fill: false,
+            tension: 0.2
+          }))
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { size: 11 } } } },
+          scales: {
+            y: { min: 0, max: 3, ticks: { stepSize: 0.5, font: { size: 10 } } },
+            x: { ticks: { font: { size: 10 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function renderDomainSummaryTable(series, latest) {
+      document.getElementById('domain-summary-body').innerHTML = DOMAIN_META.map(d => {
+        const allAvg = series.reduce((acc, s) => acc + s.m[d.key], 0) / series.length;
+        const itemAvg = allAvg / d.count;
+        const latestVal = latest.m[d.key];
+        const rate = Math.round((latestVal / d.max) * 100);
+        return `
+          <tr>
+            <td style="font-weight:700;">${d.label}</td>
+            <td class="text-right">${itemAvg.toFixed(2)} / 3.0</td>
+            <td class="text-right" style="font-weight:800; color:#0f766e;">${latestVal}/${d.max}</td>
+            <td class="text-right">${rate}%</td>
+          </tr>
+        `;
+      }).join('');
+
+      const totalCounts = { 0: 0, 1: 0, 2: 0, 3: 0 };
+      series.forEach(s => { [0, 1, 2, 3].forEach(k => { totalCounts[k] += s.m.counts[k]; }); });
+      const grand = series.length * 19;
+
+      document.getElementById('overall-dist-bars').innerHTML = CHOICE_LABELS.map(c => {
+        const cnt = totalCounts[c.val];
+        const pct = grand > 0 ? Math.round((cnt / grand) * 100) : 0;
+        return `
+          <div class="chip-${c.val}" style="padding:6px 8px; border-radius:9px; font-size:11px; font-weight:700; display:flex; justify-content:space-between;">
+            <span>${c.val}点 (${c.label})</span>
+            <span>${cnt}回 (${pct}%)</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderWeeklySummaryTable(series) {
+      const latestDateObj = new Date(series[series.length - 1].date + 'T00:00:00');
+      const msPerDay = 86400000;
+      const buckets = [
+        { label: '今週（直近7日）', min: 0, max: 6 },
+        { label: '1週前', min: 7, max: 13 },
+        { label: '2週前', min: 14, max: 20 },
+        { label: '3週前', min: 21, max: 27 },
+        { label: '4週前〜', min: 28, max: 99999 }
+      ];
+
+      const stats = buckets.map(b => {
+        const items = series.filter(s => {
+          const diff = Math.round((latestDateObj - new Date(s.date + 'T00:00:00')) / msPerDay);
+          return diff >= b.min && diff <= b.max;
+        });
+        const avg = items.length > 0 ? items.reduce((acc, x) => acc + x.m.total, 0) / items.length : null;
+        return { ...b, count: items.length, avg };
+      });
+
+      document.getElementById('weekly-summary-body').innerHTML = stats.map((b, idx) => {
+        const prev = stats[idx + 1];
+        let diffHtml = '-';
+        if (b.avg !== null && prev && prev.avg !== null) {
+          const d = b.avg - prev.avg;
+          diffHtml = `<span style="font-weight:700; color:${d >= 0 ? '#059669' : '#d97706'};">${d > 0 ? '+' : ''}${d.toFixed(1)}</span>`;
+        }
+        return `
+          <tr>
+            <td style="font-weight:600;">${b.label}</td>
+            <td class="text-center">${b.count}日</td>
+            <td class="text-right" style="font-weight:800;">${b.avg !== null ? b.avg.toFixed(1) + '点' : '-'}</td>
+            <td class="text-right">${diffHtml}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // 4. 問診票フォーム（受診用A4縦）
+    // =========================================================================
+    function populateFormDateSelector() {
+      const sel = document.getElementById('form-select-date');
+      const prevVal = sel.value;
+      const dates = getSortedDatesDesc();
+      if (dates.length === 0) {
+        sel.innerHTML = `<option value="${getTodayStr()}">${getTodayStr()}</option>`;
+        return;
+      }
+      sel.innerHTML = dates.map(d => {
+        const rec = recordsMap[d];
+        const m = calculateMetrics(rec.scores || {});
+        return `<option value="${d}">${d}（${m.total}点 / ${rec.dose || 0}mg）</option>`;
+      }).join('');
+      sel.value = (prevVal && dates.includes(prevVal)) ? prevVal : dates[0];
+    }
+
+    function formatJapaneseSlashDate(isoStr) {
+      if (!isoStr || !isoStr.includes('-')) return '　　　 / 　 / 　';
+      const [y, m, d] = isoStr.split('-');
+      return `${y} &nbsp;/&nbsp; ${Number(m)} &nbsp;/&nbsp; ${Number(d)}`;
+    }
+
+    function renderClinicForm() {
+      const selDate = document.getElementById('form-select-date').value;
+      const nextVisitVal = document.getElementById('form-next-visit').value;
+      const rec = recordsMap[selDate] || {
+        date: selDate || getTodayStr(), freq: 1, dose: 18, scores: {}, comments: '', troubles: '', goals: ''
+      };
+
+      document.getElementById('paper-today-date').innerHTML = formatJapaneseSlashDate(rec.date);
+      document.getElementById('paper-next-date').innerHTML = formatJapaneseSlashDate(nextVisitVal);
+      document.getElementById('paper-freq').innerHTML = rec.freq > 0 ? `1日 &nbsp; ${rec.freq} &nbsp; 回` : '服薬なし';
+      document.getElementById('paper-dose').innerHTML = rec.dose > 0 ? `${rec.dose} &nbsp; mg/日` : '0 &nbsp; mg/日';
+
+      const domainRowSpans = {
+        1: { span: 4, label: '朝' },
+        5: { span: 10, label: '日中' },
+        15: { span: 3, label: '夜' },
+        18: { span: 2, label: '1日を<br>通して' }
+      };
+
+      let rowsHtml = '';
+      QAD_QUESTIONS.forEach(q => {
+        const val = rec.scores ? rec.scores[q.id] : null;
+        const domainCell = domainRowSpans[q.id]
+          ? `<td rowspan="${domainRowSpans[q.id].span}" class="text-center" style="font-weight:700; background:#f8fafc;">${domainRowSpans[q.id].label}</td>`
+          : '';
+        const checkCells = [0, 1, 2, 3].map(col => {
+          const isChecked = (val !== null && val !== undefined && Number(val) === col);
+          return `<td class="text-center" style="font-weight:800; font-size:13px;">${isChecked ? '✓' : ''}</td>`;
+        }).join('');
+        rowsHtml += `<tr>${domainCell}<td>${q.id}. ${q.text}</td>${checkCells}</tr>`;
+      });
+
+      const m = calculateMetrics(rec.scores || {});
+      rowsHtml += `
+        <tr style="background:#f8fafc; font-weight:700;">
+          <td colspan="2" class="text-right">チェック項目数 × 点数を記入してください。 →</td>
+          <td class="text-center">0</td>
+          <td class="text-center">${m.counts[1] * 1}</td>
+          <td class="text-center">${m.counts[2] * 2}</td>
+          <td class="text-center">${m.counts[3] * 3}</td>
+        </tr>
+        <tr style="background:#f1f5f9; font-weight:800;">
+          <td colspan="2" class="text-right">合計点を算出してください。 →</td>
+          <td colspan="4" class="text-center" style="font-size:14px;">合計 &nbsp; <span style="font-size:16px; text-decoration:underline;">${m.total}</span> &nbsp; 点</td>
+        </tr>
+      `;
+
+      document.getElementById('paper-qad-tbody').innerHTML = rowsHtml;
+      document.getElementById('paper-comments').textContent = rec.comments || '';
+      document.getElementById('paper-troubles').textContent = rec.troubles || '';
+      document.getElementById('paper-goals').textContent = rec.goals || '';
+    }
+
+    function handleClinicFormPdf(btnEl) {
+      const selDate = document.getElementById('form-select-date').value || getTodayStr();
+      handlePdfAction('clinic-form-sheet', 'portrait', `QAD_問診票_${selDate}.pdf`, btnEl);
+    }
+
+    // =========================================================================
+    // 5. PDF生成エンジン
+    // =========================================================================
+    async function handlePdfAction(elementId, orientation, filename, btnEl) {
+      flushAllStorages();
+      const el = document.getElementById(elementId);
+      if (!el || typeof html2canvas === 'undefined' || !window.jspdf || !window.jspdf.jsPDF) {
+        showToast('オフラインのためPDF作成ライブラリを読み込めません。ブラウザの共有→プリントをご利用ください', 'warn');
+        return;
+      }
+
+      const origText = btnEl.textContent;
+      try {
+        btnEl.disabled = true;
+        btnEl.textContent = 'PDF生成中...';
+
+        const captureWidth = orientation === 'landscape' ? 1123 : 794;
+        const origW = el.style.width;
+        const origMaxW = el.style.maxWidth;
+        el.style.width = `${captureWidth}px`;
+        el.style.maxWidth = 'none';
+
+        let canvas;
+        try {
+          canvas = await html2canvas(el, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            windowWidth: captureWidth + 40
+          });
+        } finally {
+          el.style.width = origW;
+          el.style.maxWidth = origMaxW;
+        }
+
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation, unit: 'mm', format: 'a4' });
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const availW = pageWidth - 16;
+        const availH = pageHeight - 16;
+        const ratio = canvas.width / canvas.height;
+        let renderW = availW;
+        let renderH = renderW / ratio;
+        if (renderH > availH) {
+          renderH = availH;
+          renderW = renderH * ratio;
+        }
+        pdf.addImage(imgData, 'PNG', (pageWidth - renderW) / 2, (pageHeight - renderH) / 2, renderW, renderH, undefined, 'FAST');
+
+        if (activePdfBlobUrl) URL.revokeObjectURL(activePdfBlobUrl);
+        activePdfBlob = pdf.output('blob');
+        activePdfBlobUrl = URL.createObjectURL(activePdfBlob);
+        activePdfFilename = filename;
+
+        document.getElementById('pdf-modal-title').textContent = filename;
+        document.getElementById('pdf-modal-preview-img').src = imgData;
+        const openTabLink = document.getElementById('pdf-modal-open-tab');
+        openTabLink.href = activePdfBlobUrl;
+        openTabLink.download = filename;
+
+        const dlBtn = document.getElementById('pdf-modal-download-btn');
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        if (isIOS) {
+          dlBtn.classList.add('hidden');
+          document.getElementById('pdf-modal-footer-note').textContent = '「別タブでPDFを開く」を押し、開いた画面の共有アイコンから「ファイルに保存」や「プリント」を行ってください。';
+        } else {
+          dlBtn.classList.remove('hidden');
+          dlBtn.onclick = () => {
+            const a = document.createElement('a');
+            a.href = activePdfBlobUrl;
+            a.download = activePdfFilename;
+            a.click();
+          };
+          document.getElementById('pdf-modal-footer-note').textContent = '元の画面を閉じずに表示しているため、入力データはそのまま保持されます。';
+        }
+
+        document.getElementById('pdf-preview-modal').classList.remove('hidden');
+      } catch (err) {
+        showToast('PDF生成に失敗しました', 'error');
+      } finally {
+        btnEl.disabled = false;
+        btnEl.textContent = origText;
+      }
+    }
+
+    function closePdfPreviewModal() {
+      document.getElementById('pdf-preview-modal').classList.add('hidden');
+    }
+
+    // =========================================================================
+    // UIヘルパー
+    // =========================================================================
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast-msg toast-${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+  </script>
+</body>
+</html>
