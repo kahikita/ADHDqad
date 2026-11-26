@@ -41,6 +41,9 @@
       --border: #e2e8f0;
       --danger: #e11d48;
       --danger-bg: #fff1f2;
+      --warn: #d97706;
+      --warn-bg: #fffbeb;
+      --warn-border: #fde68a;
       --radius: 16px;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -117,6 +120,11 @@
       border: 1px solid var(--primary-border);
       white-space: nowrap;
       cursor: pointer;
+    }
+    .badge-warn {
+      background: var(--warn-bg);
+      color: #b45309;
+      border-color: var(--warn-border);
     }
 
     /* メインコンテナ */
@@ -255,6 +263,12 @@
     .chip-2 { background: #ecfccb; color: #3f6212; border: 1px solid #bef264; }
     .chip-3 { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
 
+    /* 副作用重症度チップ */
+    .se-chip-0 { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+    .se-chip-1 { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+    .se-chip-2 { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }
+    .se-chip-3 { background: #ffe4e6; color: #9f1239; border: 1px solid #fda4af; }
+
     /* 質問アイテム */
     .q-domain-card {
       background: var(--card);
@@ -341,6 +355,51 @@
     .seg-btn-2.active { background: #0d9488; color: #fff; border-color: #0d9488; }
     .seg-btn-3.active { background: #16a34a; color: #fff; border-color: #16a34a; }
 
+    /* 副作用入力行 */
+    .se-row {
+      padding: 10px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .se-row:last-of-type {
+      border-bottom: none;
+    }
+    .se-row-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .se-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .se-hint {
+      font-size: 11px;
+      color: #64748b;
+    }
+    .se-seg-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+    }
+    .se-seg-btn {
+      padding: 6px 4px;
+      border-radius: 9px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #475569;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+    }
+    .se-seg-btn-0.active { background: #475569; color: #ffffff; border-color: #475569; }
+    .se-seg-btn-1.active { background: #ca8a04; color: #ffffff; border-color: #ca8a04; }
+    .se-seg-btn-2.active { background: #ea580c; color: #ffffff; border-color: #ea580c; }
+    .se-seg-btn-3.active { background: #e11d48; color: #ffffff; border-color: #e11d48; }
+
     /* 入力画面のフローティング保存バー（下部ナビのすぐ上に配置） */
     .floating-score-bar {
       position: fixed;
@@ -369,8 +428,9 @@
     }
     .score-mini-breakdown {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
       font-size: 11px;
       color: #cbd5e1;
     }
@@ -380,6 +440,7 @@
       align-items: center;
       gap: 10px;
       margin-left: auto;
+      flex-shrink: 0;
     }
     .score-total-num {
       font-size: 20px;
@@ -460,6 +521,18 @@
       margin-bottom: 8px;
     }
     .history-domains strong { display: block; font-size: 13px; color: var(--text); }
+    .history-se-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 7px;
+    }
+    .history-se-tag {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
     .history-memo {
       font-size: 12px;
       color: var(--text-sub);
@@ -533,32 +606,33 @@
       background: #ffffff;
       border: 1px solid #cbd5e1;
       width: 794px;
-      padding: 26px 30px;
+      padding: 20px 26px;
       margin: 0 auto;
       color: #0f172a;
     }
     .clinic-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 12px;
+      font-size: 11.5px;
     }
     .clinic-table th, .clinic-table td {
       border: 1px solid #334155;
-      padding: 4px 7px;
+      padding: 3.5px 6px;
     }
     .clinic-table th { background: #f1f5f9; font-weight: 700; }
     .paper-memo-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
+      gap: 8px;
+      margin-top: 8px;
     }
     .paper-memo-box {
       border: 1px solid #334155;
-      border-radius: 6px;
-      padding: 8px 10px;
-      min-height: 76px;
-      font-size: 12px;
+      border-radius: 5px;
+      padding: 6px 8px;
+      min-height: 54px;
+      font-size: 11px;
+      line-height: 1.4;
     }
 
     /* モーダル共通 */
@@ -721,6 +795,7 @@
             <li>「デプロイ」＞「新しいデプロイ」＞種類「ウェブアプリ」＞アクセスできるユーザー「全員」でデプロイ</li>
             <li>発行されたURLをアプリ側の「GAS URL」欄に貼って保存</li>
           </ol>
+          <p style="margin:6px 0 0; font-size:11px;">※すでに旧GASをデプロイ済みの場合、そのままでも副作用データはJSONバックアップに自動保存されます。スプレッドシート一覧表にも副作用列を表示したい場合のみコードを差し替えてください。</p>
         </div>
         <button type="button" onclick="copyGasSourceCode()" class="btn btn-primary btn-block" style="margin-bottom:10px;">GASコードをコピー</button>
         <textarea id="gas-source-textarea" readonly rows="10" class="input-ctrl" style="font-family:monospace; font-size:11px; background:#0f172a; color:#f8fafc;"></textarea>
@@ -817,6 +892,38 @@
       <!-- Q1〜Q19 質問リスト -->
       <div id="questions-container"></div>
 
+      <!-- 副作用・体調トラッキング（医師相談用） -->
+      <div class="card" style="border-color:#fde68a;">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">副作用・体調チェック（医師相談用）</h2>
+            <p class="card-sub">症状がない日は初期値「0:なし」のまま変更不要です</p>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span id="se-active-badge" class="badge-pill">副作用なし</span>
+            <button type="button" onclick="resetSideEffectsOnly()" class="btn btn-neutral btn-sm">全0リセット</button>
+          </div>
+        </div>
+
+        <div id="side-effects-container"></div>
+
+        <div class="grid-2" style="margin-top:12px; padding-top:12px; border-top:1px solid #f1f5f9;">
+          <div>
+            <label for="input-weight" class="field-label">体重（kg・任意）</label>
+            <input type="number" id="input-weight" min="20" max="200" step="0.1" oninput="persistDraftState()" placeholder="例: 70.5" class="input-ctrl" />
+          </div>
+          <div>
+            <label for="input-vitals" class="field-label">脈拍・血圧など（任意）</label>
+            <input type="text" id="input-vitals" oninput="persistDraftState()" placeholder="例: 脈拍88 / 血圧124-78" class="input-ctrl" />
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <label for="memo-side-effects" class="field-label">副作用の詳細メモ（発現時間帯・食事摂取状況・薬効切れ時の反動など）</label>
+          <textarea id="memo-side-effects" rows="2" oninput="persistDraftState()" placeholder="例：昼食の食欲が半分程度、夕方18時頃に軽い倦怠感とイライラ感あり" class="input-ctrl"></textarea>
+        </div>
+      </div>
+
       <!-- 自由記述メモ -->
       <div class="card">
         <div class="card-header">
@@ -856,6 +963,7 @@
             <span>日中<b id="live-sub-day">0</b></span>
             <span>夜<b id="live-sub-night">0</b></span>
             <span>1日<b id="live-sub-allday">0</b></span>
+            <span style="color:#fcd34d;">副作用<b id="live-se-count" style="color:#fde68a;">0</b>件</span>
           </div>
           <div class="score-total-box">
             <div style="text-align:right;">
@@ -944,7 +1052,7 @@
       <div id="trends-print-area" class="card">
         <div class="card-header">
           <div>
-            <h2 class="card-title">QAD 治療経過・推移サマリー</h2>
+            <h2 class="card-title">QAD 治療経過・副作用推移サマリー</h2>
             <p id="trends-print-meta" class="card-sub">出力日: -</p>
           </div>
         </div>
@@ -971,16 +1079,16 @@
             <div class="kpi-val"><span id="kpi-all-avg">-</span><span style="font-size:12px; font-weight:600; color:#64748b;"> 点</span></div>
           </div>
           <div class="kpi-box">
-            <div class="kpi-label">最高点</div>
-            <div class="kpi-val" style="color:#059669;"><span id="kpi-max-score">-</span><span style="font-size:12px; font-weight:600;"> 点</span></div>
+            <div class="kpi-label">最高点 / 最低点</div>
+            <div class="kpi-val" style="font-size:15px; padding-top:2px;"><span id="kpi-max-score" style="color:#059669;">-</span> / <span id="kpi-min-score" style="color:#d97706;">-</span><span style="font-size:11px; color:#64748b;"> 点</span></div>
           </div>
           <div class="kpi-box">
-            <div class="kpi-label">最低点</div>
-            <div class="kpi-val" style="color:#d97706;"><span id="kpi-min-score">-</span><span style="font-size:12px; font-weight:600;"> 点</span></div>
+            <div class="kpi-label">副作用発現日</div>
+            <div class="kpi-val" id="kpi-se-days" style="font-size:15px; padding-top:2px;">-</div>
           </div>
           <div class="kpi-box">
-            <div class="kpi-label">最新記録日</div>
-            <div class="kpi-val" id="kpi-latest-date" style="font-size:14px; padding-top:3px;">-</div>
+            <div class="kpi-label">体重推移</div>
+            <div class="kpi-val" id="kpi-weight-range" style="font-size:14px; padding-top:3px;">-</div>
           </div>
         </div>
 
@@ -992,6 +1100,24 @@
         <div style="margin-bottom:16px;">
           <div style="font-size:13px; font-weight:800; margin-bottom:6px;">領域別 1項目平均推移（0〜3点）</div>
           <div class="chart-box"><canvas id="chart-domain-trend"></canvas></div>
+        </div>
+
+        <!-- 医師相談用 副作用サマリーテーブル -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:13px; font-weight:800; margin-bottom:6px;">副作用の発現状況サマリー（医師相談用）</div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>症状項目</th>
+                <th class="text-right">発現日数（割合）</th>
+                <th class="text-right">発現時平均</th>
+                <th class="text-center">最大程度</th>
+                <th>用量別の発現状況</th>
+              </tr>
+            </thead>
+            <tbody id="side-effect-summary-body"></tbody>
+          </table>
+          <div id="side-effect-notes-list" style="margin-top:8px; font-size:11.5px; color:#334155;"></div>
         </div>
 
         <div style="margin-bottom:16px;">
@@ -1049,7 +1175,7 @@
 
       <div class="paper-scroll-wrap">
         <div id="clinic-form-sheet">
-          <table class="clinic-table text-center" style="margin-bottom:8px;">
+          <table class="clinic-table text-center" style="margin-bottom:6px;">
             <thead>
               <tr>
                 <th style="width:25%;">今日の日付</th>
@@ -1059,28 +1185,28 @@
               </tr>
             </thead>
             <tbody>
-              <tr style="font-size:13px; font-weight:700;">
-                <td id="paper-today-date" style="padding:7px;">2026 / 11 / 25</td>
-                <td id="paper-next-date" style="padding:7px;">2026 / 12 / 09</td>
-                <td id="paper-freq" style="padding:7px;">1日 &nbsp; 1 &nbsp; 回</td>
-                <td id="paper-dose" style="padding:7px;">18 &nbsp; mg/日</td>
+              <tr style="font-size:12.5px; font-weight:700;">
+                <td id="paper-today-date" style="padding:5px;">2026 / 11 / 25</td>
+                <td id="paper-next-date" style="padding:5px;">2026 / 12 / 09</td>
+                <td id="paper-freq" style="padding:5px;">1日 &nbsp; 1 &nbsp; 回</td>
+                <td id="paper-dose" style="padding:5px;">18 &nbsp; mg/日</td>
               </tr>
             </tbody>
           </table>
 
-          <div style="text-align:right; font-size:11px; font-weight:700; margin-bottom:4px;">
+          <div style="text-align:right; font-size:10.5px; font-weight:700; margin-bottom:3px;">
             0＝全く違う &nbsp;&nbsp; 1＝わずかにそう思う &nbsp;&nbsp; 2＝かなりそう思う &nbsp;&nbsp; 3＝全くその通り ▼
           </div>
 
           <table class="clinic-table">
             <thead>
               <tr class="text-center">
-                <th style="width:52px;">時間帯</th>
+                <th style="width:50px;">時間帯</th>
                 <th>QAD</th>
-                <th style="width:30px;">0</th>
-                <th style="width:30px;">1</th>
-                <th style="width:30px;">2</th>
-                <th style="width:30px;">3</th>
+                <th style="width:28px;">0</th>
+                <th style="width:28px;">1</th>
+                <th style="width:28px;">2</th>
+                <th style="width:28px;">3</th>
               </tr>
             </thead>
             <tbody id="paper-qad-tbody"></tbody>
@@ -1088,18 +1214,29 @@
 
           <div class="paper-memo-grid">
             <div class="paper-memo-box">
-              <div style="font-size:11px; font-weight:700; margin-bottom:4px;">周囲の人からのコメントやその他気づいた変化</div>
+              <div style="font-size:10.5px; font-weight:700; margin-bottom:2px;">周囲の人からのコメントやその他気づいた変化</div>
               <div id="paper-comments" style="white-space:pre-wrap;"></div>
             </div>
             <div class="paper-memo-box">
-              <div style="font-size:11px; font-weight:700; margin-bottom:4px;">現在困っていること</div>
+              <div style="font-size:10.5px; font-weight:700; margin-bottom:2px;">現在困っていること</div>
               <div id="paper-troubles" style="white-space:pre-wrap;"></div>
             </div>
           </div>
 
-          <div class="paper-memo-box" style="margin-top:8px; min-height:60px;">
-            <div style="font-size:11px; font-weight:700; margin-bottom:4px;">目標など</div>
+          <div class="paper-memo-box" style="margin-top:6px; min-height:44px;">
+            <div style="font-size:10.5px; font-weight:700; margin-bottom:2px;">目標など</div>
             <div id="paper-goals" style="white-space:pre-wrap;"></div>
+          </div>
+
+          <!-- 医師相談用 副作用・体調共有欄 -->
+          <div class="paper-memo-box" style="margin-top:6px; min-height:68px; background:#fffbeb;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:10.5px; font-weight:800; margin-bottom:3px; border-bottom:1px solid #cbd5e1; padding-bottom:2px;">
+              <span>副作用・体調記録（医師相談用）</span>
+              <span id="paper-vitals-weight" style="font-weight:700;"></span>
+            </div>
+            <div id="paper-se-today" style="font-weight:700; margin-bottom:3px;"></div>
+            <div id="paper-se-memo" style="white-space:pre-wrap; margin-bottom:4px;"></div>
+            <div id="paper-se-history-summary" style="font-size:10px; color:#334155; border-top:1px dashed #94a3b8; padding-top:3px;"></div>
           </div>
         </div>
       </div>
@@ -1131,7 +1268,7 @@
 
   <script>
     // =========================================================================
-    // 定数・質問マスタ定義
+    // 定数・質問マスタ・副作用マスタ定義
     // =========================================================================
     const STORAGE_KEY = 'qad_daily_records_v1';
     const NEXT_VISIT_KEY = 'qad_next_visit_date_v1';
@@ -1179,6 +1316,27 @@
       { val: 3, label: 'その通り' }
     ];
 
+    // 医師相談用 副作用マスタ（成人臨床試験・添付文書上の主要項目）
+    const SIDE_EFFECT_ITEMS = [
+      { key: 'appetite',     label: '食欲減退',           hint: '昼食が入らない・食事量の低下' },
+      { key: 'insomnia',     label: '不眠・入眠困難',     hint: '寝つきが悪い・夜間に目が覚める' },
+      { key: 'palpitation',  label: '動悸・脈拍増加',     hint: '胸のドキドキ感・脈が速い' },
+      { key: 'nausea',       label: '悪心・胃部不快感',   hint: '吐き気・胃のムカムカ・腹痛' },
+      { key: 'thirst',       label: '口渇',               hint: '口の渇き・水分を多く欲する' },
+      { key: 'headache',     label: '頭痛・めまい',       hint: '頭重感・ふらつき' },
+      { key: 'irritability', label: 'イライラ・不安感',   hint: '焦燥感・夕方の薬効切れ時の反動' },
+      { key: 'fatigue',      label: '倦怠感・疲労感',     hint: 'だるさ・強い疲れ' }
+    ];
+
+    const SE_LEVEL_LABELS = [
+      { val: 0, label: '0:なし' },
+      { val: 1, label: '1:軽度' },
+      { val: 2, label: '2:中等度' },
+      { val: 3, label: '3:強い' }
+    ];
+
+    const SE_LEVEL_SHORT = { 0: 'なし', 1: '軽度', 2: '中等度', 3: '強い' };
+
     const INITIAL_SAMPLE_DATA = {
       '2026-11-25': {
         date: '2026-11-25',
@@ -1190,6 +1348,13 @@
           15: 0, 16: 1, 17: 0,
           18: 2, 19: 1
         },
+        sideEffects: {
+          appetite: 0, insomnia: 0, palpitation: 0, nausea: 0,
+          thirst: 0, headache: 0, irritability: 0, fatigue: 0
+        },
+        weight: null,
+        vitals: '',
+        sideEffectMemo: '',
         comments: '起床時に時間・気力がかかる',
         troubles: '「〜してから」と先延ばしにして前日ギリギリになり、無理やり終わらせようとしてミス・抜け漏れが多くなる。勉強時にじっとしていられない、衝動買い（本を買うが読まない）、電車での置き忘れ、片付けの苦手さ。夜間の過集中と睡眠リズムの乱れ。',
         goals: '勉強や作業に落ち着いて取り掛かり、計画的に最後までやり遂げられるようになること（先延ばし・ミス・衝動性の軽減と睡眠リズムの安定）。',
@@ -1197,7 +1362,7 @@
       }
     };
 
-    const GAS_SOURCE_CODE = `// QAD 毎日の記録・経過管理システム 連携用 Google Apps Script
+    const GAS_SOURCE_CODE = `// QAD 毎日の記録・副作用・経過管理システム 連携用 Google Apps Script
 const DATA_SHEET_NAME = 'QAD記録一覧';
 const BACKUP_SHEET_NAME = 'JSONバックアップ_システム用';
 
@@ -1247,6 +1412,9 @@ function doPost(e) {
       'Q15', 'Q16', 'Q17',
       'Q18', 'Q19',
       '朝計(0-12)', '日中計(0-30)', '夜計(0-9)', '1日計(0-6)', '合計点(0-57)',
+      '副作用_食欲減退', '副作用_不眠', '副作用_動悸', '副作用_悪心胃部不快',
+      '副作用_口渇', '副作用_頭痛めまい', '副作用_イライラ不安', '副作用_倦怠感',
+      '副作用合計(0-24)', '体重(kg)', '脈拍血圧', '副作用メモ',
       '周囲からのコメント・変化', '現在困っていること', '目標など', '最終更新日時'
     ];
 
@@ -1256,6 +1424,7 @@ function doPost(e) {
     dates.forEach(function(d) {
       const rec = records[d];
       const s = rec.scores || {};
+      const se = rec.sideEffects || {};
       const qVals = [];
       for (var i = 1; i <= 19; i++) {
         qVals.push(Number(s[i] || 0));
@@ -1266,12 +1435,21 @@ function doPost(e) {
       const allday = qVals[17] + qVals[18];
       const total = morning + day + night + allday;
 
+      const seKeys = ['appetite', 'insomnia', 'palpitation', 'nausea', 'thirst', 'headache', 'irritability', 'fatigue'];
+      const seVals = seKeys.map(function(k) { return Number(se[k] || 0); });
+      const seTotal = seVals.reduce(function(a, b) { return a + b; }, 0);
+
       rows.push([
         rec.date || d,
         rec.freq || 0,
         rec.dose || 0
       ].concat(qVals).concat([
-        morning, day, night, allday, total,
+        morning, day, night, allday, total
+      ]).concat(seVals).concat([
+        seTotal,
+        rec.weight !== null && rec.weight !== undefined ? rec.weight : '',
+        rec.vitals || '',
+        rec.sideEffectMemo || '',
         rec.comments || '',
         rec.troubles || '',
         rec.goals || '',
@@ -1300,6 +1478,7 @@ function createJsonResponse(obj) {
     // アプリ状態
     let recordsMap = {};
     let currentFormScores = {};
+    let currentSideEffects = {};
     let currentNextVisitDate = '2026-12-09';
     let currentDraft = null;
     let gasWebAppUrl = '';
@@ -1320,6 +1499,7 @@ function createJsonResponse(obj) {
     // =========================================================================
     window.addEventListener('DOMContentLoaded', async () => {
       renderQuestionCards();
+      renderSideEffectCards();
       await hydrateAllStorages();
 
       syncNextVisitDate(currentNextVisitDate, false);
@@ -1368,6 +1548,22 @@ function createJsonResponse(obj) {
       const m = String(now.getMonth() + 1).padStart(2, '0');
       const d = String(now.getDate()).padStart(2, '0');
       return `${y}-${m}-${d}`;
+    }
+
+    function createEmptySideEffects() {
+      const obj = {};
+      SIDE_EFFECT_ITEMS.forEach(item => { obj[item.key] = 0; });
+      return obj;
+    }
+
+    function normalizeSideEffects(seObj) {
+      const clean = createEmptySideEffects();
+      if (!seObj || typeof seObj !== 'object') return clean;
+      SIDE_EFFECT_ITEMS.forEach(item => {
+        const v = Number(seObj[item.key] ?? 0);
+        clean[item.key] = (v >= 0 && v <= 3) ? v : 0;
+      });
+      return clean;
     }
 
     function syncNextVisitDate(val, shouldPersist = true) {
@@ -1524,11 +1720,18 @@ function createJsonResponse(obj) {
     function persistDraftState() {
       const dateEl = document.getElementById('input-date');
       if (!dateEl || !dateEl.value) return;
+      const weightRaw = document.getElementById('input-weight')?.value;
+      const weightVal = (weightRaw !== '' && weightRaw !== null && weightRaw !== undefined) ? Number(weightRaw) : null;
+
       currentDraft = {
         date: dateEl.value,
         freq: Number(document.getElementById('input-freq')?.value ?? 1),
         dose: Number(document.getElementById('input-dose')?.value ?? 18),
         scores: { ...currentFormScores },
+        sideEffects: { ...currentSideEffects },
+        weight: (weightVal !== null && !Number.isNaN(weightVal)) ? weightVal : null,
+        vitals: document.getElementById('input-vitals')?.value || '',
+        sideEffectMemo: document.getElementById('memo-side-effects')?.value || '',
         comments: document.getElementById('memo-comments')?.value || '',
         troubles: document.getElementById('memo-troubles')?.value || '',
         goals: document.getElementById('memo-goals')?.value || ''
@@ -1732,6 +1935,35 @@ function createJsonResponse(obj) {
       return { morning, day, night, allday, total, avg, counts, answered, unanswered: 19 - answered };
     }
 
+    function calculateSideEffectMetrics(seObj) {
+      const clean = normalizeSideEffects(seObj);
+      let activeList = [];
+      let totalScore = 0;
+      let maxSeverity = 0;
+
+      SIDE_EFFECT_ITEMS.forEach(item => {
+        const val = clean[item.key];
+        totalScore += val;
+        if (val > maxSeverity) maxSeverity = val;
+        if (val > 0) {
+          activeList.push({
+            key: item.key,
+            label: item.label,
+            val,
+            levelLabel: SE_LEVEL_SHORT[val]
+          });
+        }
+      });
+
+      return {
+        clean,
+        activeList,
+        activeCount: activeList.length,
+        totalScore,
+        maxSeverity
+      };
+    }
+
     function setPrintOrientation(orientation) {
       const styleTag = document.getElementById('dynamic-print-page-style');
       if (!styleTag) return;
@@ -1769,7 +2001,7 @@ function createJsonResponse(obj) {
     }
 
     // =========================================================================
-    // 1. 毎日の入力画面ロジック
+    // 1. 毎日の入力画面ロジック（QAD ＋ 副作用）
     // =========================================================================
     function setDosePreset(freq, dose) {
       document.getElementById('input-freq').value = String(freq);
@@ -1837,6 +2069,32 @@ function createJsonResponse(obj) {
       });
     }
 
+    function renderSideEffectCards() {
+      const container = document.getElementById('side-effects-container');
+      if (!container) return;
+
+      container.innerHTML = SIDE_EFFECT_ITEMS.map(item => {
+        const buttonsHtml = SE_LEVEL_LABELS.map(lvl => `
+          <button type="button"
+            id="se-btn-${item.key}-${lvl.val}"
+            onclick="selectSideEffect('${item.key}', ${lvl.val})"
+            class="se-seg-btn se-seg-btn-${lvl.val}">
+            ${lvl.label}
+          </button>
+        `).join('');
+
+        return `
+          <div class="se-row">
+            <div class="se-row-head">
+              <span class="se-name">${item.label}</span>
+              <span class="se-hint">${item.hint}</span>
+            </div>
+            <div class="se-seg-grid">${buttonsHtml}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
     function selectScore(qId, val) {
       currentFormScores[qId] = (currentFormScores[qId] === val) ? null : val;
       refreshQuestionButtonsUI();
@@ -1844,11 +2102,36 @@ function createJsonResponse(obj) {
       persistDraftState();
     }
 
+    function selectSideEffect(seKey, val) {
+      currentSideEffects[seKey] = val;
+      refreshSideEffectButtonsUI();
+      updateLiveAggregation();
+      persistDraftState();
+    }
+
+    function resetSideEffectsOnly() {
+      currentSideEffects = createEmptySideEffects();
+      refreshSideEffectButtonsUI();
+      updateLiveAggregation();
+      persistDraftState();
+      showToast('副作用チェックをすべて「0:なし」に戻しました', 'info');
+    }
+
     function refreshQuestionButtonsUI() {
       QAD_QUESTIONS.forEach(q => {
         const selected = currentFormScores[q.id];
         [0, 1, 2, 3].forEach(val => {
           const btn = document.getElementById(`q-btn-${q.id}-${val}`);
+          if (btn) btn.classList.toggle('active', selected === val);
+        });
+      });
+    }
+
+    function refreshSideEffectButtonsUI() {
+      SIDE_EFFECT_ITEMS.forEach(item => {
+        const selected = Number(currentSideEffects[item.key] ?? 0);
+        [0, 1, 2, 3].forEach(val => {
+          const btn = document.getElementById(`se-btn-${item.key}-${val}`);
           if (btn) btn.classList.toggle('active', selected === val);
         });
       });
@@ -1875,6 +2158,20 @@ function createJsonResponse(obj) {
         unansweredEl.textContent = `未入力 ${m.unanswered}問`;
         unansweredEl.style.color = '#fbbf24';
       }
+
+      const se = calculateSideEffectMetrics(currentSideEffects);
+      const seBadge = document.getElementById('se-active-badge');
+      const liveSeCount = document.getElementById('live-se-count');
+      if (liveSeCount) liveSeCount.textContent = se.activeCount;
+      if (seBadge) {
+        if (se.activeCount === 0) {
+          seBadge.textContent = '副作用なし';
+          seBadge.classList.remove('badge-warn');
+        } else {
+          seBadge.textContent = `症状あり ${se.activeCount}項目`;
+          seBadge.classList.add('badge-warn');
+        }
+      }
     }
 
     function loadRecordIntoForm(dateStr, allowDraftRestore = true) {
@@ -1889,6 +2186,10 @@ function createJsonResponse(obj) {
           const val = currentDraft.scores ? currentDraft.scores[q.id] : null;
           currentFormScores[q.id] = (val !== undefined && val !== null) ? Number(val) : null;
         });
+        currentSideEffects = normalizeSideEffects(currentDraft.sideEffects);
+        document.getElementById('input-weight').value = (currentDraft.weight !== null && currentDraft.weight !== undefined) ? currentDraft.weight : '';
+        document.getElementById('input-vitals').value = currentDraft.vitals || '';
+        document.getElementById('memo-side-effects').value = currentDraft.sideEffectMemo || '';
         document.getElementById('memo-comments').value = currentDraft.comments || '';
         document.getElementById('memo-troubles').value = currentDraft.troubles || '';
         document.getElementById('memo-goals').value = currentDraft.goals || '';
@@ -1901,6 +2202,10 @@ function createJsonResponse(obj) {
           const val = existing.scores ? existing.scores[q.id] : null;
           currentFormScores[q.id] = (val !== undefined && val !== null) ? Number(val) : null;
         });
+        currentSideEffects = normalizeSideEffects(existing.sideEffects);
+        document.getElementById('input-weight').value = (existing.weight !== null && existing.weight !== undefined) ? existing.weight : '';
+        document.getElementById('input-vitals').value = existing.vitals || '';
+        document.getElementById('memo-side-effects').value = existing.sideEffectMemo || '';
         document.getElementById('memo-comments').value = existing.comments || '';
         document.getElementById('memo-troubles').value = existing.troubles || '';
         document.getElementById('memo-goals').value = existing.goals || '';
@@ -1912,6 +2217,10 @@ function createJsonResponse(obj) {
         document.getElementById('input-dose').value = latestRec ? (latestRec.dose ?? 18) : 18;
         currentFormScores = {};
         QAD_QUESTIONS.forEach(q => { currentFormScores[q.id] = null; });
+        currentSideEffects = createEmptySideEffects();
+        document.getElementById('input-weight').value = '';
+        document.getElementById('input-vitals').value = '';
+        document.getElementById('memo-side-effects').value = '';
         document.getElementById('memo-comments').value = '';
         document.getElementById('memo-troubles').value = '';
         document.getElementById('memo-goals').value = '';
@@ -1920,6 +2229,7 @@ function createJsonResponse(obj) {
 
       syncDosePresetHighlight();
       refreshQuestionButtonsUI();
+      refreshSideEffectButtonsUI();
       updateLiveAggregation();
     }
 
@@ -1948,12 +2258,17 @@ function createJsonResponse(obj) {
     function clearCurrentForm() {
       currentFormScores = {};
       QAD_QUESTIONS.forEach(q => { currentFormScores[q.id] = null; });
+      currentSideEffects = createEmptySideEffects();
+      document.getElementById('input-weight').value = '';
+      document.getElementById('input-vitals').value = '';
+      document.getElementById('memo-side-effects').value = '';
       document.getElementById('memo-comments').value = '';
       document.getElementById('memo-troubles').value = '';
       document.getElementById('memo-goals').value = '';
       currentDraft = null;
       flushAllStorages();
       refreshQuestionButtonsUI();
+      refreshSideEffectButtonsUI();
       updateLiveAggregation();
       showToast('入力内容をリセットしました', 'info');
     }
@@ -1975,11 +2290,19 @@ function createJsonResponse(obj) {
         scoresClean[q.id] = currentFormScores[q.id] !== null ? Number(currentFormScores[q.id]) : 0;
       });
 
+      const seClean = normalizeSideEffects(currentSideEffects);
+      const weightRaw = document.getElementById('input-weight').value;
+      const weightVal = (weightRaw !== '' && weightRaw !== null) ? Number(weightRaw) : null;
+
       recordsMap[dateStr] = {
         date: dateStr,
         freq: Number(document.getElementById('input-freq').value || 0),
         dose: Number(document.getElementById('input-dose').value || 0),
         scores: scoresClean,
+        sideEffects: seClean,
+        weight: (weightVal !== null && !Number.isNaN(weightVal)) ? weightVal : null,
+        vitals: document.getElementById('input-vitals').value.trim(),
+        sideEffectMemo: document.getElementById('memo-side-effects').value.trim(),
         comments: document.getElementById('memo-comments').value.trim(),
         troubles: document.getElementById('memo-troubles').value.trim(),
         goals: document.getElementById('memo-goals').value.trim(),
@@ -1987,14 +2310,18 @@ function createJsonResponse(obj) {
       };
 
       currentFormScores = { ...scoresClean };
+      currentSideEffects = { ...seClean };
       currentDraft = null;
       refreshQuestionButtonsUI();
+      refreshSideEffectButtonsUI();
       updateLiveAggregation();
       flushAllStorages();
 
       document.getElementById('input-edit-status').textContent = '保存済';
       if (!silent) {
-        showToast(`${dateStr} の記録（合計 ${m.total}点）を保存しました`, 'success');
+        const se = calculateSideEffectMetrics(seClean);
+        const seMsg = se.activeCount > 0 ? ` / 副作用 ${se.activeCount}項目` : '';
+        showToast(`${dateStr} の記録（合計 ${m.total}点${seMsg}）を保存しました`, 'success');
       }
       if (gasWebAppUrl && gasAutoSyncEnabled) {
         silentAutoBackupToSheets();
@@ -2033,16 +2360,25 @@ function createJsonResponse(obj) {
       container.innerHTML = dates.map(dateStr => {
         const rec = recordsMap[dateStr];
         const m = calculateMetrics(rec.scores || {});
+        const se = calculateSideEffectMetrics(rec.sideEffects);
         const doseText = (rec.dose && rec.dose > 0) ? `${rec.freq || 1}回 / ${rec.dose}mg` : '服薬なし';
-        const memoSummary = rec.troubles || rec.comments || rec.goals || 'メモなし';
+        const weightBadge = (rec.weight !== null && rec.weight !== undefined)
+          ? `<span class="history-dose">${rec.weight}kg</span>`
+          : '';
+        const memoSummary = rec.sideEffectMemo || rec.troubles || rec.comments || rec.goals || 'メモなし';
         const chipCls = m.total >= 38 ? 'chip-3' : (m.total >= 26 ? 'chip-2' : (m.total >= 15 ? 'chip-1' : 'chip-0'));
+
+        const seTagsHtml = se.activeCount === 0
+          ? `<span class="history-se-tag se-chip-0">副作用なし</span>`
+          : se.activeList.map(item => `<span class="history-se-tag se-chip-${item.val}">${item.label}(${item.levelLabel})</span>`).join('');
 
         return `
           <div class="history-item-card" onclick="editRecordFromHistory('${dateStr}')">
             <div class="history-item-top">
-              <div style="display:flex; align-items:center; gap:8px;">
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                 <span class="history-date">${dateStr}</span>
                 <span class="history-dose">${doseText}</span>
+                ${weightBadge}
               </div>
               <span class="${chipCls}" style="padding:3px 10px; border-radius:9px; font-size:13px; font-weight:800;">
                 合計 ${m.total}点
@@ -2054,6 +2390,7 @@ function createJsonResponse(obj) {
               <div>夜<strong>${m.night}/9</strong></div>
               <div>1日<strong>${m.allday}/6</strong></div>
             </div>
+            <div class="history-se-tags">${seTagsHtml}</div>
             <div class="history-memo">${escapeHtml(memoSummary)}</div>
             <div class="history-actions" onclick="event.stopPropagation()">
               <div class="dist-mini">
@@ -2117,16 +2454,25 @@ function createJsonResponse(obj) {
         '日付', '服用回数', '用量(mg)',
         ...QAD_QUESTIONS.map(q => `Q${q.id}`),
         '朝計', '日中計', '夜計', '1日計', '合計点',
+        ...SIDE_EFFECT_ITEMS.map(item => `副作用_${item.label}`),
+        '副作用合計', '体重(kg)', '脈拍血圧', '副作用メモ',
         'コメント', '困っていること', '目標'
       ];
       const rows = dates.map(d => {
         const rec = recordsMap[d];
         const m = calculateMetrics(rec.scores || {});
+        const se = calculateSideEffectMetrics(rec.sideEffects);
         const qVals = QAD_QUESTIONS.map(q => rec.scores?.[q.id] ?? 0);
+        const seVals = SIDE_EFFECT_ITEMS.map(item => se.clean[item.key]);
         return [
           rec.date, rec.freq ?? 0, rec.dose ?? 0,
           ...qVals,
           m.morning, m.day, m.night, m.allday, m.total,
+          ...seVals,
+          se.totalScore,
+          rec.weight !== null && rec.weight !== undefined ? rec.weight : '',
+          rec.vitals || '',
+          rec.sideEffectMemo || '',
           rec.comments || '', rec.troubles || '', rec.goals || ''
         ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
       });
@@ -2228,7 +2574,7 @@ function createJsonResponse(obj) {
     }
 
     // =========================================================================
-    // 3. 推移サマリー画面ロジック
+    // 3. 推移サマリー画面ロジック（QAD ＋ 副作用サマリー）
     // =========================================================================
     function setTrendsRange(rangeKey) {
       trendsRangeFilter = rangeKey;
@@ -2252,7 +2598,12 @@ function createJsonResponse(obj) {
 
       const fullSeries = allDatesAsc.map(d => {
         const rec = recordsMap[d];
-        return { date: d, rec, m: calculateMetrics(rec.scores || {}) };
+        return {
+          date: d,
+          rec,
+          m: calculateMetrics(rec.scores || {}),
+          se: calculateSideEffectMetrics(rec.sideEffects)
+        };
       });
 
       const movingAvg7Full = fullSeries.map((_, idx) => {
@@ -2288,11 +2639,29 @@ function createJsonResponse(obj) {
 
       document.getElementById('kpi-days').textContent = count;
       document.getElementById('kpi-latest-score').textContent = latest.m.total;
-      document.getElementById('kpi-latest-date').textContent = latest.date;
       document.getElementById('kpi-all-avg').textContent = allAvg.toFixed(1);
       document.getElementById('kpi-7d-avg').textContent = avg7.toFixed(1);
       document.getElementById('kpi-max-score').textContent = Math.max(...totals);
       document.getElementById('kpi-min-score').textContent = Math.min(...totals);
+
+      const seDaysCount = series.filter(s => s.se.activeCount > 0).length;
+      const seDaysPct = Math.round((seDaysCount / count) * 100);
+      const seKpiEl = document.getElementById('kpi-se-days');
+      seKpiEl.textContent = `${seDaysCount}/${count}日 (${seDaysPct}%)`;
+      seKpiEl.style.color = seDaysCount > 0 ? '#b45309' : '#059669';
+
+      const weights = series.map(s => s.rec.weight).filter(w => w !== null && w !== undefined && !Number.isNaN(Number(w))).map(Number);
+      const weightKpiEl = document.getElementById('kpi-weight-range');
+      if (weights.length === 0) {
+        weightKpiEl.textContent = '未記録';
+      } else if (weights.length === 1) {
+        weightKpiEl.textContent = `${weights[0].toFixed(1)} kg`;
+      } else {
+        const wFirst = weights[0];
+        const wLast = weights[weights.length - 1];
+        const wDiff = wLast - wFirst;
+        weightKpiEl.textContent = `${wLast.toFixed(1)}kg (${wDiff > 0 ? '+' : ''}${wDiff.toFixed(1)})`;
+      }
 
       const diffEl = document.getElementById('kpi-diff-baseline');
       if (count === 1) {
@@ -2307,8 +2676,74 @@ function createJsonResponse(obj) {
         renderTotalTrendChart(series, movingAvg7);
         renderDomainTrendChart(series);
       }
+      renderSideEffectSummaryTable(series);
       renderDomainSummaryTable(series, latest);
       renderWeeklySummaryTable(fullSeries);
+    }
+
+    function renderSideEffectSummaryTable(series) {
+      const tbody = document.getElementById('side-effect-summary-body');
+      const notesBox = document.getElementById('side-effect-notes-list');
+      const totalDays = series.length;
+
+      tbody.innerHTML = SIDE_EFFECT_ITEMS.map(item => {
+        let activeDays = 0;
+        let sumWhenActive = 0;
+        let maxLevel = 0;
+        const doseMap = {};
+
+        series.forEach(s => {
+          const val = s.se.clean[item.key] || 0;
+          const doseLabel = (s.rec.dose && s.rec.dose > 0) ? `${s.rec.dose}mg` : '0mg';
+          if (!doseMap[doseLabel]) doseMap[doseLabel] = { total: 0, active: 0 };
+          doseMap[doseLabel].total++;
+
+          if (val > 0) {
+            activeDays++;
+            sumWhenActive += val;
+            if (val > maxLevel) maxLevel = val;
+            doseMap[doseLabel].active++;
+          }
+        });
+
+        const pct = Math.round((activeDays / totalDays) * 100);
+        const avgActive = activeDays > 0 ? (sumWhenActive / activeDays).toFixed(1) : '-';
+        const maxBadge = maxLevel > 0
+          ? `<span class="se-chip-${maxLevel}" style="padding:2px 7px; border-radius:6px; font-size:11px; font-weight:700;">${SE_LEVEL_SHORT[maxLevel]}</span>`
+          : `<span style="color:#94a3b8;">なし</span>`;
+
+        const doseBreakdown = Object.keys(doseMap).map(dl => {
+          const info = doseMap[dl];
+          return `${dl}: ${info.active}/${info.total}日`;
+        }).join(' / ');
+
+        return `
+          <tr>
+            <td style="font-weight:700;">${item.label}</td>
+            <td class="text-right" style="font-weight:${activeDays > 0 ? '800' : '400'}; color:${activeDays > 0 ? '#9a3412' : '#64748b'};">${activeDays}日 (${pct}%)</td>
+            <td class="text-right">${avgActive}</td>
+            <td class="text-center">${maxBadge}</td>
+            <td style="font-size:11px; color:#475569;">${doseBreakdown}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const recentNotes = series
+        .filter(s => s.rec.sideEffectMemo || s.rec.vitals)
+        .slice(-5)
+        .reverse();
+
+      if (recentNotes.length === 0) {
+        notesBox.innerHTML = '';
+      } else {
+        notesBox.innerHTML = `<div style="font-weight:700; margin-bottom:3px;">副作用・バイタルメモ（直近記録）:</div>` +
+          recentNotes.map(s => {
+            const parts = [];
+            if (s.rec.vitals) parts.push(`[${s.rec.vitals}]`);
+            if (s.rec.sideEffectMemo) parts.push(s.rec.sideEffectMemo);
+            return `<div style="padding:2px 0;">・<strong>${s.date}</strong> (${s.rec.dose || 0}mg): ${escapeHtml(parts.join(' '))}</div>`;
+          }).join('');
+      }
     }
 
     function renderTotalTrendChart(series, movingAvg7) {
@@ -2458,7 +2893,7 @@ function createJsonResponse(obj) {
     }
 
     // =========================================================================
-    // 4. 問診票フォーム（受診用A4縦）
+    // 4. 問診票フォーム（受診用A4縦 ＋ 副作用共有欄）
     // =========================================================================
     function populateFormDateSelector() {
       const sel = document.getElementById('form-select-date');
@@ -2471,7 +2906,9 @@ function createJsonResponse(obj) {
       sel.innerHTML = dates.map(d => {
         const rec = recordsMap[d];
         const m = calculateMetrics(rec.scores || {});
-        return `<option value="${d}">${d}（${m.total}点 / ${rec.dose || 0}mg）</option>`;
+        const se = calculateSideEffectMetrics(rec.sideEffects);
+        const seTag = se.activeCount > 0 ? ` / 副作用${se.activeCount}` : '';
+        return `<option value="${d}">${d}（${m.total}点 / ${rec.dose || 0}mg${seTag}）</option>`;
       }).join('');
       sel.value = (prevVal && dates.includes(prevVal)) ? prevVal : dates[0];
     }
@@ -2482,11 +2919,36 @@ function createJsonResponse(obj) {
       return `${y} &nbsp;/&nbsp; ${Number(m)} &nbsp;/&nbsp; ${Number(d)}`;
     }
 
+    function buildRecentSideEffectsSummaryText(targetDate) {
+      const dates = getSortedDatesAsc().filter(d => d <= targetDate).slice(-14);
+      if (dates.length === 0) return '';
+      const summaryParts = [];
+      SIDE_EFFECT_ITEMS.forEach(item => {
+        let activeDays = 0;
+        let maxVal = 0;
+        dates.forEach(d => {
+          const se = normalizeSideEffects(recordsMap[d]?.sideEffects);
+          const v = se[item.key] || 0;
+          if (v > 0) {
+            activeDays++;
+            if (v > maxVal) maxVal = v;
+          }
+        });
+        if (activeDays > 0) {
+          summaryParts.push(`${item.label}(${activeDays}/${dates.length}日・最大:${SE_LEVEL_SHORT[maxVal]})`);
+        }
+      });
+      if (summaryParts.length === 0) {
+        return `直近${dates.length}日間の副作用経過: 特記すべき副作用の発現なし`;
+      }
+      return `直近${dates.length}日間の副作用経過: ${summaryParts.join('、')}`;
+    }
+
     function renderClinicForm() {
       const selDate = document.getElementById('form-select-date').value;
       const nextVisitVal = document.getElementById('form-next-visit').value;
       const rec = recordsMap[selDate] || {
-        date: selDate || getTodayStr(), freq: 1, dose: 18, scores: {}, comments: '', troubles: '', goals: ''
+        date: selDate || getTodayStr(), freq: 1, dose: 18, scores: {}, sideEffects: {}, comments: '', troubles: '', goals: ''
       };
 
       document.getElementById('paper-today-date').innerHTML = formatJapaneseSlashDate(rec.date);
@@ -2509,7 +2971,7 @@ function createJsonResponse(obj) {
           : '';
         const checkCells = [0, 1, 2, 3].map(col => {
           const isChecked = (val !== null && val !== undefined && Number(val) === col);
-          return `<td class="text-center" style="font-weight:800; font-size:13px;">${isChecked ? '✓' : ''}</td>`;
+          return `<td class="text-center" style="font-weight:800; font-size:12.5px;">${isChecked ? '✓' : ''}</td>`;
         }).join('');
         rowsHtml += `<tr>${domainCell}<td>${q.id}. ${q.text}</td>${checkCells}</tr>`;
       });
@@ -2525,7 +2987,7 @@ function createJsonResponse(obj) {
         </tr>
         <tr style="background:#f1f5f9; font-weight:800;">
           <td colspan="2" class="text-right">合計点を算出してください。 →</td>
-          <td colspan="4" class="text-center" style="font-size:14px;">合計 &nbsp; <span style="font-size:16px; text-decoration:underline;">${m.total}</span> &nbsp; 点</td>
+          <td colspan="4" class="text-center" style="font-size:13.5px;">合計 &nbsp; <span style="font-size:15.5px; text-decoration:underline;">${m.total}</span> &nbsp; 点</td>
         </tr>
       `;
 
@@ -2533,6 +2995,23 @@ function createJsonResponse(obj) {
       document.getElementById('paper-comments').textContent = rec.comments || '';
       document.getElementById('paper-troubles').textContent = rec.troubles || '';
       document.getElementById('paper-goals').textContent = rec.goals || '';
+
+      // 副作用・体調欄の描画
+      const se = calculateSideEffectMetrics(rec.sideEffects);
+      const vwParts = [];
+      if (rec.weight !== null && rec.weight !== undefined) vwParts.push(`体重: ${rec.weight}kg`);
+      if (rec.vitals) vwParts.push(rec.vitals);
+      document.getElementById('paper-vitals-weight').textContent = vwParts.join(' / ');
+
+      if (se.activeCount === 0) {
+        document.getElementById('paper-se-today').textContent = '当日の症状: なし（主要8項目すべて0）';
+      } else {
+        const itemsText = se.activeList.map(item => `${item.label}【${item.levelLabel}】`).join('、');
+        document.getElementById('paper-se-today').textContent = `当日の症状: ${itemsText}`;
+      }
+
+      document.getElementById('paper-se-memo').textContent = rec.sideEffectMemo || '';
+      document.getElementById('paper-se-history-summary').textContent = buildRecentSideEffectsSummaryText(rec.date);
     }
 
     function handleClinicFormPdf(btnEl) {
